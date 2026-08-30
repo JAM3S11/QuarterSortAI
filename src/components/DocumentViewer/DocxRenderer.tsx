@@ -4,6 +4,7 @@ import { extractDocxComments, extractDocxHeadings, countWords } from '../../lib/
 import { applySearchHighlights, collectMatchElements, scrollElementIntoView } from '../../lib/domSearch';
 import { useActivePage } from '../../hooks/useActivePage';
 import { ViewerRenderProps } from './types';
+import { PRINT_PAGE_CSS } from '../../lib/printSupport';
 
 export const DocxRenderer: React.FC<ViewerRenderProps> = (props) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -173,6 +174,20 @@ export const DocxRenderer: React.FC<ViewerRenderProps> = (props) => {
       container.scrollTo({ top: target, behavior: 'smooth' });
     });
     return () => props.registerTocNav?.(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    props.registerPrint?.(() => {
+      const container = containerRef.current;
+      if (!container) return null;
+      const wrapper = container.querySelector('.docx-wrapper');
+      if (!wrapper) return null;
+      const libCss = document.getElementById('qso-docx-styles')?.textContent || '';
+      const html = `<div class="docx-wrapper">${wrapper.innerHTML}</div>`;
+      return { title: props.file.name, html, css: `${PRINT_PAGE_CSS}\n${libCss}` };
+    });
+    return () => props.registerPrint?.(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { readFileBlob } from '../../lib/blob';
 import { ViewerRenderProps } from './types';
+import { PRINT_PAGE_CSS, canvasToImgHtml } from '../../lib/printSupport';
 
 export const SlideRenderer: React.FC<ViewerRenderProps> = (props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,6 +64,30 @@ export const SlideRenderer: React.FC<ViewerRenderProps> = (props) => {
     return () => props.registerNav(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goToSlide]);
+
+  useEffect(() => {
+    props.registerPrint?.(async () => {
+      const renderer = rendererRef.current;
+      if (!renderer || renderer.slideCount === 0) return null;
+      const canvases: string[] = [];
+      for (let i = 0; i < renderer.slideCount; i++) {
+        const c = document.createElement('canvas');
+        try {
+          await renderer.renderSlide(i, c, 960);
+          canvases.push(c.toDataURL('image/png'));
+        } catch {
+          /* skip unrenderable slide */
+        }
+      }
+      if (canvases.length === 0) return null;
+      const html = canvases
+        .map((url) => `<div class="pp"><img src="${url}" style="max-width:100%;height:auto;display:block;margin:0 auto"></div>`)
+        .join('');
+      return { title: props.file.name, html, css: PRINT_PAGE_CSS };
+    });
+    return () => props.registerPrint?.(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (rendererRef.current && slideCount > 0) goToSlide(currentSlide);

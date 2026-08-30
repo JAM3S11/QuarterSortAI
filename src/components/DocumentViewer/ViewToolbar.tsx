@@ -4,7 +4,7 @@ import { ScaleMode } from './types';
 import { formatSize } from '../../lib/format';
 import {
   X, FileText, Lock, Search, ChevronLeft, ChevronRight, ZoomIn, ZoomOut,
-  ListTree, Sparkles, MessageSquare, MoveHorizontal, Scan, Download, ArrowUp, ArrowDown,
+  ListTree, Sparkles, MessageSquare, Download, ArrowUp, ArrowDown, Printer,
 } from 'lucide-react';
 
 interface ViewToolbarProps {
@@ -33,6 +33,7 @@ interface ViewToolbarProps {
   commentCount: number;
   onToggleComments: () => void;
   onDownload: () => void;
+  onPrint: () => void;
 }
 
 const ZOOM_PRESETS = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -41,7 +42,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
   file, onClose, pageCount, currentPage, onGoToPage, onPrev, onNext,
   scale, scaleMode, onZoomChange, searchQuery, onSearchChange, matchCount, activeMatch,
   onPrevMatch, onNextMatch, tocOpen, tocCount, onToggleToc, insightsOpen, onToggleInsights,
-  commentsOpen, commentCount, onToggleComments, onDownload,
+  commentsOpen, commentCount, onToggleComments, onDownload, onPrint,
 }) => {
   const btn = 'p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-slate-700/70 text-slate-500 dark:text-slate-300 transition-colors disabled:opacity-30 disabled:pointer-events-none';
 
@@ -182,6 +183,14 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
           {commentCount > 0 && <span className="text-[9px]">{commentCount}</span>}
         </button>
       </div>
+
+      <button
+        onClick={onPrint}
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+        title="Print — choose a printer"
+      >
+        <Printer className="w-3.5 h-3.5" /> Print
+      </button>
 
       <button
         onClick={onDownload}

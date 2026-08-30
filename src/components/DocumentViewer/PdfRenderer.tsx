@@ -4,6 +4,7 @@ import { escapeRegExp } from '../../lib/domSearch';
 import { countWords } from '../../lib/docxMeta';
 import { useActivePage } from '../../hooks/useActivePage';
 import { ViewerRenderProps } from './types';
+import { PRINT_PAGE_CSS, canvasToImgHtml } from '../../lib/printSupport';
 
 let pdfjsPromise: Promise<any> | null = null;
 
@@ -374,6 +375,40 @@ export const PdfRenderer: React.FC<ViewerRenderProps> = (props) => {
     return () => props.registerNav(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goToPage]);
+
+  useEffect(() => {
+    props.registerPrint?.(async () => {
+      const container = containerRef.current;
+      const pdf = pdfRef.current;
+      if (!container || !pdf) return null;
+
+      // Render every page at a print-friendly scale (fit to ~7in width).
+      const original = scaleRef.current;
+      const fitScale = baseSize ? Math.max(0.4, Math.min(1.5, 700 / baseSize.w)) : original;
+      if (Math.abs(fitScale - original) > 0.001) {
+        scaleRef.current = fitScale;
+        renderVersionRef.current++;
+        container.querySelectorAll('canvas, .qso-pdf-textlayer').forEach((n) => n.remove());
+      }
+
+      const pageEls = Array.from(container.querySelectorAll('[data-pdf-page]')) as HTMLElement[];
+      for (const el of pageEls) {
+        const pageNum = parseInt(el.dataset.pdfPage || '0', 10);
+        if (pageNum > 0) await renderPage(pageNum);
+      }
+
+      const html = pageEls
+        .map((el) => {
+          const canvas = el.querySelector('canvas') as HTMLCanvasElement | null;
+          return canvasToImgHtml(canvas);
+        })
+        .join('');
+
+      return { title: props.file.name, html, css: PRINT_PAGE_CSS };
+    });
+    return () => props.registerPrint?.(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseSize, renderPage]);
 
   return (
     <div className="relative flex-1 overflow-hidden">

@@ -4,6 +4,7 @@ import { countWords } from '../../lib/docxMeta';
 import { useActivePage } from '../../hooks/useActivePage';
 import { useDomSearch } from '../../hooks/useDomSearch';
 import { ViewerRenderProps } from './types';
+import { PRINT_PAGE_CSS } from '../../lib/printSupport';
 
 const PAGE_W = 794;
 const PAGE_H = 1100;
@@ -119,6 +120,18 @@ export const TextRenderer: FC<ViewerRenderProps> = (props) => {
     return () => props.registerNav(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goToPage]);
+
+  useEffect(() => {
+    props.registerPrint?.(() => {
+      const container = containerRef.current;
+      if (!container) return null;
+      const pages = Array.from(container.querySelectorAll('.qso-text-page')) as HTMLElement[];
+      if (pages.length === 0) return null;
+      return { title: props.file.name, html: pages.map((p) => p.outerHTML).join(''), css: PRINT_PAGE_CSS };
+    });
+    return () => props.registerPrint?.(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="relative flex-1 overflow-hidden">

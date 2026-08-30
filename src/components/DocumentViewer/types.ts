@@ -1,4 +1,5 @@
 import { ScannedFile } from '../../types';
+import type { PrintPayload } from '../../lib/printSupport';
 
 export type ScaleMode = 'custom' | 'fitWidth' | 'fitPage';
 
@@ -31,6 +32,7 @@ export interface ViewerRenderProps {
   onActiveMatchChange: (n: number) => void;
   onTextExtracted: (text: string) => void;
   registerTocNav?: (fn: ((item: TocItem) => void) | null) => void;
+  registerPrint?: (fn: (() => PrintPayload | Promise<PrintPayload> | null) | null) => void;
 }
 
 export const PAGE_PADDING = 48;

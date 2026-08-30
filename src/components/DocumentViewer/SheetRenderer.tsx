@@ -4,6 +4,7 @@ import { readFileBlob } from '../../lib/blob';
 import { countWords } from '../../lib/docxMeta';
 import { ViewerRenderProps } from './types';
 import { Table } from 'lucide-react';
+import { PRINT_PAGE_CSS } from '../../lib/printSupport';
 
 interface Sheet {
   name: string;
@@ -112,6 +113,18 @@ export const SheetRenderer: React.FC<ViewerRenderProps> = (props) => {
   useEffect(() => {
     props.registerNav(null);
     props.onPageChange(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    props.registerPrint?.(() => {
+      const grid = gridRef.current;
+      if (!grid) return null;
+      const table = grid.querySelector('table');
+      if (!table) return null;
+      return { title: props.file.name, html: table.outerHTML, css: PRINT_PAGE_CSS };
+    });
+    return () => props.registerPrint?.(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

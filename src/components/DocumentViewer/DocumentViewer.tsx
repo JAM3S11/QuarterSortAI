@@ -13,6 +13,7 @@ import { CommentsPanel } from './CommentsPanel';
 import { ScaleMode, TocItem, CommentItem, ViewerRenderProps } from './types';
 import { DocumentInsights, computeDocumentInsights } from '../../lib/documentInsights';
 import { readFileBlob } from '../../lib/blob';
+import { PrintPayload, PRINT_PAGE_CSS, openPrintWindow, writePrintWindow, escapeHtml } from '../../lib/printSupport';
 
 const VIEWER_STYLES = `
   .docx-wrapper {
@@ -154,6 +155,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
 
   const navRef = useRef<((n: number) => void) | null>(null);
   const tocNavRef = useRef<((item: TocItem) => void) | null>(null);
+  const printRef = useRef<(() => PrintPayload | Promise<PrintPayload> | null) | null>(null);
   const tocAutoOpenedRef = useRef<string | null>(null);
   const aiFetchedRef = useRef<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -183,6 +185,9 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
   }, []);
   const registerTocNav = useCallback((fn: ((item: TocItem) => void) | null) => {
     tocNavRef.current = fn;
+  }, []);
+  const registerPrint = useCallback((fn: (() => PrintPayload | Promise<PrintPayload> | null) | null) => {
+    printRef.current = fn;
   }, []);
 
   const handlePageCount = useCallback((n: number) => setPageCount(n), []);
@@ -286,6 +291,50 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
     window.setTimeout(() => URL.revokeObjectURL(url), 4000);
   }, [file]);
 
+  const buildMediaPrintPayload = useCallback(async (): Promise<PrintPayload | null> => {
+    if (!file) return null;
+    const ext = file.extension.toLowerCase();
+    const isImage = IMAGE_EXTS.includes(ext);
+    let src = file.contentUrl || '';
+    if (isImage) {
+      const blob = await readFileBlob(file);
+      if (blob) {
+        try {
+          src = await new Promise<string>((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () => resolve(String(r.result));
+            r.onerror = () => reject(new Error('read failed'));
+            r.readAsDataURL(blob);
+          });
+        } catch {
+          src = '';
+        }
+      }
+    }
+    const html = isImage && src
+      ? `<div class="pp"><img src="${src}" style="max-width:100%;height:auto;display:block;margin:0 auto"></div>`
+      : `<p style="font-family:Calibri,Arial,sans-serif;color:#64748b;padding:40px;text-align:center;">` +
+        `No printable content available for <strong>${escapeHtml(file.name)}</strong>.</p>`;
+    return { title: file.name, html, css: PRINT_PAGE_CSS };
+  }, [file]);
+
+  const handlePrint = useCallback(async () => {
+    // Open synchronously so the click gesture survives pop-up blocking.
+    const win = openPrintWindow();
+    try {
+      const payload = printRef.current ? await printRef.current() : await buildMediaPrintPayload();
+      if (!payload || !win) throw new Error('Print content unavailable');
+      writePrintWindow(win, payload);
+    } catch (e) {
+      console.error('Print failed:', e);
+      try {
+        win?.close();
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [buildMediaPrintPayload]);
+
   // Keyboard navigation + Ctrl+wheel zoom
   useEffect(() => {
     const modal = modalRef.current;
@@ -355,6 +404,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
     onActiveMatchChange: handleActiveMatchChange,
     onTextExtracted: handleTextExtracted,
     registerTocNav,
+    registerPrint,
   };
 
   const renderer = (() => {
@@ -403,6 +453,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
           commentCount={comments.length}
           onToggleComments={() => setRightPanel((p) => (p === 'comments' ? null : 'comments'))}
           onDownload={handleDownload}
+          onPrint={handlePrint}
         />
 
         <div className="flex-1 flex overflow-hidden">

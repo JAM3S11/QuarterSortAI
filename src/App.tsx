@@ -22,6 +22,8 @@ import { scanFileList } from './lib/scannerEngine';
 import { matchPhysicalDisk } from './lib/diskMatch';
 import { saveScannedIndexToDB, clearScannedIndexFromDB } from './lib/indexedDB';
 
+const LAST_DRIVE_KEY = 'quartersort.lastDriveId';
+
 export default function App() {
   const [scannedFiles, setScannedFiles] = useState<ScannedFile[]>([]);
   const [volumeInfo, setVolumeInfo] = useState<USBVolumeInfo | null>(null);
@@ -33,6 +35,7 @@ export default function App() {
   const [showConnectConfirm, setShowConnectConfirm] = useState<boolean>(false);
   const [showReplaceConfirm, setShowReplaceConfirm] = useState<boolean>(false);
   const [physicalDisks, setPhysicalDisks] = useState<PhysicalDisk[]>([]);
+  const [selectedDiskId, setSelectedDiskId] = useState<string>(() => localStorage.getItem(LAST_DRIVE_KEY) || '');
   const [driveConfirmDisks, setDriveConfirmDisks] = useState<PhysicalDisk[]>([]);
   const [driveConfirmRoot, setDriveConfirmRoot] = useState<string>('');
   const [isDriveConfirmOpen, setIsDriveConfirmOpen] = useState<boolean>(false);
@@ -144,15 +147,26 @@ export default function App() {
       }, { enableOCR: ocrEnabled });
 
       const rootName = result.files[0]?.relativePath.split('/')[0] ?? '';
-      const matchedDisk = matchPhysicalDisk(physicalDisks, rootName);
+      let matchedDisk = matchPhysicalDisk(physicalDisks, rootName);
 
       let finalVolume = result.volumeInfo;
       if (matchedDisk) {
         finalVolume = applyRealDriveInfo(result.volumeInfo, matchedDisk);
-      } else if (physicalDisks.length > 0) {
-        setDriveConfirmRoot(rootName);
-        setDriveConfirmDisks(physicalDisks);
-        setIsDriveConfirmOpen(true);
+      } else {
+        const preselected = selectedDiskId ? physicalDisks.find((d) => d.id === selectedDiskId) ?? null : null;
+        if (preselected) {
+          matchedDisk = preselected;
+          finalVolume = applyRealDriveInfo(result.volumeInfo, preselected);
+        } else if (physicalDisks.length > 0) {
+          setDriveConfirmRoot(rootName);
+          setDriveConfirmDisks(physicalDisks);
+          setIsDriveConfirmOpen(true);
+        }
+      }
+
+      if (matchedDisk) {
+        localStorage.setItem(LAST_DRIVE_KEY, matchedDisk.id);
+        setSelectedDiskId(matchedDisk.id);
       }
 
       setScannedFiles(result.files);
@@ -172,10 +186,19 @@ export default function App() {
       const data = await res.json();
       if (data && Array.isArray(data.disks)) {
         setPhysicalDisks(data.disks);
+        const remembered = localStorage.getItem(LAST_DRIVE_KEY);
+        if (remembered && data.disks.some((d) => d.id === remembered)) {
+          setSelectedDiskId(remembered);
+        }
       }
     } catch (err) {
       console.warn('disk-stats unavailable:', err);
     }
+  };
+
+  const handleSelectDisk = (id: string) => {
+    setSelectedDiskId(id);
+    localStorage.setItem(LAST_DRIVE_KEY, id);
   };
 
   const applyRealDriveInfo = (vinfo: USBVolumeInfo, disk: PhysicalDisk): USBVolumeInfo => {
@@ -194,6 +217,8 @@ export default function App() {
   const handleDriveConfirm = (disk: PhysicalDisk) => {
     setIsDriveConfirmOpen(false);
     if (!volumeInfo) return;
+    localStorage.setItem(LAST_DRIVE_KEY, disk.id);
+    setSelectedDiskId(disk.id);
     const patched = applyRealDriveInfo(volumeInfo, disk);
     setVolumeInfo(patched);
     saveScannedIndexToDB(scannedFiles, patched);
@@ -363,6 +388,10 @@ export default function App() {
 
       <ConnectConfirmationModal
         isOpen={showConnectConfirm}
+        disks={physicalDisks}
+        selectedDiskId={selectedDiskId}
+        onSelectDisk={handleSelectDisk}
+        onRefreshDisks={fetchPhysicalDisks}
         onAccept={handleConnectAccept}
         onDecline={() => setShowConnectConfirm(false)}
       />
