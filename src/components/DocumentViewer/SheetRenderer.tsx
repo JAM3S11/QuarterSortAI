@@ -5,6 +5,9 @@ import { countWords } from '../../lib/docxMeta';
 import { ViewerRenderProps } from './types';
 import { Table } from 'lucide-react';
 import { PRINT_PAGE_CSS } from '../../lib/printSupport';
+import { formatSize } from '../../lib/format';
+
+const MAX_SHEET_ROWS = 5000; // cap rendered rows to avoid DOM blow-up
 
 interface Sheet {
   name: string;
@@ -51,6 +54,7 @@ export const SheetRenderer: React.FC<ViewerRenderProps> = (props) => {
   const [activeSheet, setActiveSheet] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [truncated, setTruncated] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,7 +68,8 @@ export const SheetRenderer: React.FC<ViewerRenderProps> = (props) => {
         const blob = await readFileBlob(props.file);
         if (blob) {
           if (ext === 'csv') {
-            const text = await blob.text();
+            const target = blob.size > 4 * 1024 * 1024 ? blob.slice(0, 4 * 1024 * 1024) : blob;
+            const text = await target.text();
             result = [{ name: 'CSV', rows: parseCsv(text) }];
           } else {
             const wb = XLSX.read(await blob.arrayBuffer(), { type: 'array' });
@@ -81,7 +86,12 @@ export const SheetRenderer: React.FC<ViewerRenderProps> = (props) => {
           throw new Error('No spreadsheet content available.');
         }
         if (cancelled) return;
-        const clean = result.map((s) => ({ name: s.name, rows: s.rows.map((r) => r.map((c) => String(c ?? ''))) }));
+        const clean = result.map((s) => ({
+          name: s.name,
+          rows: s.rows.slice(0, MAX_SHEET_ROWS).map((r) => r.map((c) => String(c ?? ''))),
+        }));
+        const anyTruncated = result.some((s) => s.rows.length > MAX_SHEET_ROWS);
+        setTruncated(anyTruncated);
         setSheets(clean);
         setActiveSheet(0);
         props.onPageCount(1);
@@ -155,9 +165,14 @@ export const SheetRenderer: React.FC<ViewerRenderProps> = (props) => {
               </button>
             ))}
             <span className="ml-auto text-[10px] font-mono text-slate-400 px-2">
-              {sheet.rows.length.toLocaleString()} rows
+              {sheet.rows.length.toLocaleString()} rows{truncated ? ' shown' : ''}
             </span>
           </div>
+          {truncated && (
+            <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/60 border-b border-amber-200 dark:border-amber-900 text-[11px] text-amber-700 dark:text-amber-300">
+              This spreadsheet is large — showing the first {MAX_SHEET_ROWS.toLocaleString()} rows per sheet. Download the file to view everything.
+            </div>
+          )}
           <div ref={gridRef} className="p-4">
             <div className="inline-block min-w-full">
               <table className="text-xs border-collapse font-mono">

@@ -2,5 +2,5 @@
   "name": "QuarterSort AI",
   "description": "Intelligent USB Document Explorer & Financial Quarter Classifier with cyber security scanning, AI insights, and instant file preview.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GROQ_API"]
 }

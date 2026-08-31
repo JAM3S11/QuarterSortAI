@@ -20,6 +20,7 @@ interface ConnectConfirmationModalProps {
   isOpen: boolean;
   disks: PhysicalDisk[];
   selectedDiskId: string;
+  isMobile?: boolean;
   onSelectDisk: (id: string) => void;
   onRefreshDisks: () => void;
   onAccept: () => void;
@@ -30,6 +31,7 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
   isOpen,
   disks,
   selectedDiskId,
+  isMobile,
   onSelectDisk,
   onRefreshDisks,
   onAccept,
@@ -164,9 +166,19 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
             <Globe className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
             <p className="text-xs leading-relaxed text-slate-300">
               On <span className="font-bold text-slate-100">Accept</span>, your device's file chooser will
-              open so you can select that drive's folder. The files are read locally on your device —
-              no upload, no modification, and no extra browser permission popups. The drive picked in the
-              slot above is applied automatically when the scan reports from that drive.
+              open so you can select that drive's folder.
+              {isMobile ? (
+                <>
+                  {' '}On this device, pick the folder you want to scan — or select individual files or a
+                  folder from your Files app and everything chosen will still be indexed.
+                </>
+              ) : (
+                <>
+                  {' '}The files are read locally on your device — no upload, no modification, and no extra
+                  browser permission popups.
+                </>
+              )}
+              {' '}The drive picked in the slot above is applied automatically when the scan reports from that drive.
             </p>
           </div>
 

@@ -149,6 +149,27 @@ export const PdfRenderer: React.FC<ViewerRenderProps> = (props) => {
     }
   }, [renderPage]);
 
+  const ensureTexts = useCallback(async () => {
+    const pdf = pdfRef.current;
+    if (!pdf || pdf.numPages === 0) return;
+    if (pageTextsRef.current.length >= pdf.numPages) return;
+    const texts: string[] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      try {
+        const page = await pdf.getPage(i);
+        const tc = await page.getTextContent();
+        texts.push(tc.items.map((it: any) => it.str).join(' '));
+      } catch {
+        texts.push('');
+      }
+    }
+    pageTextsRef.current = texts;
+    const joined = texts.join(' ');
+    props.onWordCount(countWords(joined));
+    props.onTextExtracted(joined.slice(0, 20000));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const search = useCallback(
     async (query: string) => {
       queryRef.current = query;
@@ -179,6 +200,9 @@ export const PdfRenderer: React.FC<ViewerRenderProps> = (props) => {
           }
         }
         pageTextsRef.current = texts;
+        const joined = texts.join(' ');
+        props.onWordCount(countWords(joined));
+        props.onTextExtracted(joined.slice(0, 20000));
       }
       const lower = trimmed.toLowerCase();
       const starts = [0];
@@ -280,21 +304,8 @@ export const PdfRenderer: React.FC<ViewerRenderProps> = (props) => {
         setBaseSize({ w: vp1.width, h: vp1.height });
         props.onPageCount(pdf.numPages);
 
-        // load text content (for search + word count)
-        const texts: string[] = [];
-        for (let i = 1; i <= pdf.numPages; i++) {
-          try {
-            const page = await pdf.getPage(i);
-            const tc = await page.getTextContent();
-            texts.push(tc.items.map((it: any) => it.str).join(' '));
-          } catch {
-            texts.push('');
-          }
-          if (cancelled) return;
-        }
-        pageTextsRef.current = texts;
-        props.onWordCount(countWords(texts.join(' ')));
-        props.onTextExtracted(texts.join('\n').slice(0, 20000));
+        // Word count + extracted text are computed lazily (see ensureTexts)
+        // so large PDFs don't block on upfront full-text extraction.
 
         observerRef.current?.disconnect();
         const observer = new IntersectionObserver(
@@ -315,6 +326,8 @@ export const PdfRenderer: React.FC<ViewerRenderProps> = (props) => {
         renderVisiblePages();
         setLoading(false);
         loadingRef.current = false;
+        // Kick off full-text extraction in the background (non-blocking).
+        ensureTexts();
       } catch (e: any) {
         if (!cancelled) {
           setError(e.message || 'Failed to load PDF');

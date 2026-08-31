@@ -106,7 +106,7 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ file, insights, in
           </div>
         ) : (
           <div className="text-xs text-slate-400 rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50 dark:bg-slate-900">
-            {aiUnavailable ? 'AI insights unavailable (no Gemini key).' : 'No insights available for this file.'}
+            {aiUnavailable ? 'AI insights unavailable (no Groq key).' : 'No insights available for this file.'}
           </div>
         )}
       </section>

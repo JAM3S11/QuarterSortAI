@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FC } from 'react';
 import { readFileBlob } from '../../lib/blob';
 import { countWords } from '../../lib/docxMeta';
+import { formatSize } from '../../lib/format';
 import { useActivePage } from '../../hooks/useActivePage';
 import { useDomSearch } from '../../hooks/useDomSearch';
 import { ViewerRenderProps } from './types';
@@ -9,11 +10,14 @@ import { PRINT_PAGE_CSS } from '../../lib/printSupport';
 const PAGE_W = 794;
 const PAGE_H = 1100;
 const MAX_LINES_PER_PAGE = 46;
+const MAX_PREVIEW_BYTES = 4 * 1024 * 1024; // preview at most the first ~4MB
+const MAX_PREVIEW_PAGES = 400; // cap DOM nodes to avoid freezing the UI
 
 export const TextRenderer: FC<ViewerRenderProps> = (props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [truncated, setTruncated] = useState(false);
   const [fitScale, setFitScale] = useState(1);
 
   const { activePage, goToPage, rescan } = useActivePage(containerRef, '.qso-text-page');
@@ -27,10 +31,20 @@ export const TextRenderer: FC<ViewerRenderProps> = (props) => {
       try {
         let text = props.file.textContent || '';
         const blob = await readFileBlob(props.file);
-        if (blob && !['txt', 'log', 'md', 'csv'].includes(props.file.extension.toLowerCase())) {
-          text = await blob.text();
-        } else if (blob && text.trim().length < 40) {
-          text = await blob.text();
+        const readFull = ['txt', 'log', 'md', 'csv'].includes(props.file.extension.toLowerCase());
+        let truncatedPreview = false;
+        if (blob) {
+          let target = blob;
+          if (blob.size > MAX_PREVIEW_BYTES) {
+            target = blob.slice(0, MAX_PREVIEW_BYTES);
+            truncatedPreview = true;
+          }
+          const chunk = await target.text();
+          if (readFull) {
+            text = chunk;
+          } else if (text.trim().length < 40) {
+            text = chunk;
+          }
         }
         if (cancelled) return;
 
@@ -46,6 +60,11 @@ export const TextRenderer: FC<ViewerRenderProps> = (props) => {
           if (page.length >= MAX_LINES_PER_PAGE) {
             pages.push(page);
             page = [];
+            if (pages.length >= MAX_PREVIEW_PAGES) {
+              truncatedPreview = true;
+              page = [];
+              break;
+            }
           }
         }
         if (page.length > 0 || pages.length === 0) pages.push(page);
@@ -63,6 +82,7 @@ export const TextRenderer: FC<ViewerRenderProps> = (props) => {
           container.appendChild(pageEl);
         }
 
+        setTruncated(truncatedPreview);
         props.onPageCount(pages.length);
         props.onWordCount(countWords(text));
         props.onTextExtracted(text.slice(0, 20000));
@@ -136,6 +156,11 @@ export const TextRenderer: FC<ViewerRenderProps> = (props) => {
   return (
     <div className="relative flex-1 overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 overflow-y-auto overflow-x-hidden" />
+      {truncated && !loading && (
+        <div className="absolute bottom-0 inset-x-0 z-10 px-4 py-2 bg-amber-50 dark:bg-amber-950/60 border-t border-amber-200 dark:border-amber-900 text-[11px] text-amber-700 dark:text-amber-300">
+          This file is {formatSize(props.file.size)} — the preview shows only the first ~{MAX_PREVIEW_BYTES / (1024 * 1024)}MB to keep things fast. Download the file to view everything.
+        </div>
+      )}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-100/80 dark:bg-slate-900/60 text-sm text-slate-400">
           Loading text...

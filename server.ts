@@ -5,7 +5,12 @@ import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI } from '@google/genai';
+
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+// Replaceable Groq model. Override via GROQ_MODEL in .env if the default is
+// unavailable for your API key tier.
+const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,15 +23,8 @@ async function startServer() {
 
   app.use(express.json({ limit: '10mb' }));
 
-  // Initialize Gemini AI client server-side
-  const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY || 'AIzaSy_MOCK_SECRET_KEY',
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      },
-    },
-  });
+  // Initialize Groq AI client config server-side (real calls gated on GROQ_API_KEY)
+  const groqApiKey = process.env.GROQ_API_KEY || '';
 
   // API Health Endpoint
   app.get('/api/health', (req, res) => {
@@ -34,7 +32,7 @@ async function startServer() {
       status: 'ok',
       service: 'QuarterSort AI Backend',
       timestamp: new Date().toISOString(),
-      geminiConfigured: Boolean(process.env.GEMINI_API_KEY)
+      groqConfigured: Boolean(groqApiKey)
     });
   });
 
@@ -49,64 +47,162 @@ async function startServer() {
     }
   });
 
-  // AI Insights Endpoint
-  app.post('/api/ai-insights', async (req, res) => {
+  // Well Findings Analysis Endpoint — powered by Groq (GROQ_API_KEY)
+  // Serves as the primary AI AUDIT REPORT for the repository.
+  app.post('/api/well-findings', async (req, res) => {
     try {
       const { summaryData } = req.body;
-      
+
       if (!summaryData) {
         return res.status(400).json({ error: 'Missing summaryData payload' });
       }
 
-      // If GEMINI_API_KEY is available, make real Gemini API call
-      if (process.env.GEMINI_API_KEY) {
-        const prompt = `You are a Principal Software & Financial Audit Auditor reviewing a scanned USB drive containing organizational documents.
-Here is the scanned summary metrics JSON:
+      // If GROQ_API_KEY is available, make a real Groq API call
+      if (groqApiKey) {
+        const prompt = `You are a Principal Data Integrity & Regulatory Audit Auditor performing a refined, deep-dive audit of a scanned enterprise document repository (the "well" file set).
+
+Here is the scanned repository summary metrics JSON:
 ${JSON.stringify(summaryData, null, 2)}
 
-Provide a concise, highly insightful executive audit report formatted as JSON with keys:
-- "summary": string (2-3 sentences overview of the document repository hygiene)
-- "anomalies": array of strings (3 bullet points detecting misclassified quarters, missing metadata, or unorganized folders)
-- "recommendations": array of strings (3 actionable recommendations for document retention and security)
-- "complianceRating": string (e.g. "98.5% Compliant" or "Grade A - High Integrity")
-- "duplicateSavingsAdvice": string (how to reclaim storage from duplicates safely)
+Produce a comprehensive, highly detailed AI AUDIT REPORT. Return ONLY valid JSON with this exact structure:
+- "summary": string (2-3 sentences executive overview of repository integrity)
+- "score": number (0-100 overall integrity score)
+- "grade": string (letter grade, e.g. "A", "B+", "C-", deriving from score)
+- "complianceRating": string (e.g. "96.2% Compliant" or "Grade A - High Integrity")
+- "riskAssessment": string (e.g. "Low" / "Medium" / "High" followed by a one-sentence justification)
+- "sections": array of exactly 6 objects, one per audit dimension, each with:
+  - "key": one of "quarterDistribution", "categoryBreakdown", "duplicates", "metadataIntegrity", "storageOptimization", "organizationalStructure"
+  - "title": string (human-readable name of the dimension)
+  - "status": one of "pass", "warning", or "fail" (your verdict for this dimension)
+  - "metric": string (short headline figure, e.g. "Q1: 126 files · Q2: 82 files" or "1.8 GB reclaimable")
+  - "summary": string (2-3 sentences of concrete analysis grounded in the provided metrics)
+- "findings": array of 6-9 objects, balanced mix of "critical", "warning", and "good", each with:
+  - "severity": "critical" | "warning" | "good"
+  - "title": string (short finding heading)
+  - "detail": string (evidence-backed explanation referencing the provided metrics)
+  - "recommendation": string (actionable remediation or retention step)
+- "recommendations": array of 3-5 strings (prioritized actions for the organization)
 
-Return ONLY valid JSON matching this structure.`;
+Every analysis must reference the actual numbers in the supplied metrics — never invent data that contradicts the input. Return ONLY valid JSON matching this structure.`;
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
+        const response = await fetch(GROQ_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${groqApiKey}`,
           },
+          body: JSON.stringify({
+            model: GROQ_MODEL,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.4,
+            response_format: { type: 'json_object' },
+          }),
         });
 
-        const responseText = response.text || '';
-        const parsed = JSON.parse(responseText);
-        return res.json({ success: true, insights: parsed, source: 'gemini' });
+        if (!response.ok) {
+          throw new Error(`Groq API error ${response.status}: ${await response.text()}`);
+        }
+
+        const groqData = await response.json();
+        const content = groqData?.choices?.[0]?.message?.content;
+        if (!content) throw new Error('Empty Groq response');
+
+        const parsed = JSON.parse(content);
+        return res.json({ success: true, report: parsed, source: 'groq', model: GROQ_MODEL });
       }
 
-      // Fallback deterministic AI insights when offline / key absent
-      const mockInsight = {
-        summary: `QuarterSort AI audited ${summaryData.totalFiles || 248} files across ${summaryData.totalFolders || 36} directories. Document distribution is strongest in Q1 (${summaryData.quarterBreakdown?.Q1 || 126} files) and Q2 (${summaryData.quarterBreakdown?.Q2 || 82} files).`,
-        anomalies: [
-          '3 documents in /Backup folder are duplicates of Q2 Payroll sheets.',
-          '19 scanned PDF files rely solely on file modified timestamps due to missing embedded metadata.',
-          'Uncompressed ZIP archives in /Invoices represent 1.2 GB of potential storage compression.'
+      // Fallback deterministic AI audit report when GROQ_API_KEY absent
+      const qb = summaryData.quarterBreakdown || {};
+      const cb = summaryData.categoryBreakdown || {};
+      const totalFiles = summaryData.totalFiles || 248;
+      const totalFolders = summaryData.totalFolders || 36;
+      const dupMB = summaryData.duplicateSavingsMB || 1.8;
+
+      const mockReport = {
+        summary: `QuarterSort AI audited ${totalFiles} files across ${totalFolders} directories. The repository is largely healthy but shows isolated integrity gaps in metadata capture and duplicate storage.`,
+        score: 84,
+        grade: 'B+',
+        complianceRating: '91.4% High Integrity',
+        riskAssessment: 'Medium — duplicate payloads and missing embedded metadata reduce audit-trace reliability.',
+        sections: [
+          {
+            key: 'quarterDistribution',
+            title: 'Quarter Distribution',
+            status: 'pass',
+            metric: `Q1: ${qb.Q1 || 0} · Q2: ${qb.Q2 || 0} · Q3: ${qb.Q3 || 0} · Q4: ${qb.Q4 || 0}`,
+            summary: `Records are concentrated in Q1 (${qb.Q1 || 0}) and Q2 (${qb.Q2 || 0}), indicating consistent upstream throughput with Q3 and Q4 still accumulating.`,
+          },
+          {
+            key: 'categoryBreakdown',
+            title: 'Category Breakdown',
+            status: 'pass',
+            metric: `Documents: ${cb.Documents || 0} · Images: ${cb.Images || 0} · Archives: ${cb.Archives || 0}`,
+            summary: 'Mixed media is distributed across expected categories; no dominated or anomalous category detected.',
+          },
+          {
+            key: 'duplicates',
+            title: 'Duplicate Analysis',
+            status: 'fail',
+            metric: `${dupMB.toFixed(1)} MB reclaimable`,
+            summary: `Approximately ${dupMB.toFixed(1)} MB of redundant payload exists, signaling repeated copies across backup and working directories.`,
+          },
+          {
+            key: 'metadataIntegrity',
+            title: 'Metadata Integrity',
+            status: 'warning',
+            metric: 'Partial embedded metadata coverage',
+            summary: 'Several scanned records rely on filesystem timestamps rather than embedded metadata, weakening the audit trail.',
+          },
+          {
+            key: 'storageOptimization',
+            title: 'Storage Optimization',
+            status: 'warning',
+            metric: 'Uncompressed archive candidates',
+            summary: 'Uncompressed archives could be re-compressed to reclaim capacity without data loss.',
+          },
+          {
+            key: 'organizationalStructure',
+            title: 'Organizational Structure',
+            status: 'pass',
+            metric: `${totalFolders} directories`,
+            summary: `Folder taxonomy over ${totalFolders} directories is coherent and navigable with no orphaned top-level spills.`,
+          },
+        ],
+        findings: [
+          {
+            id: 'deep-drill-1',
+            severity: 'critical',
+            title: 'Duplicate zone detected',
+            detail: `Approximately ${dupMB.toFixed(1)} MB of redundant payloads identified, indicating duplicate copies within the repository.`,
+            recommendation: 'Run deduplication and consolidate replicas into a single authoritative archive.',
+          },
+          {
+            id: 'deep-drill-2',
+            severity: 'warning',
+            title: 'Metadata integrity gaps',
+            detail: 'Several scanned records rely on filesystem timestamps rather than embedded metadata, reducing audit trail reliability.',
+            recommendation: 'Enforce embedded metadata capture at ingestion for all new well records.',
+          },
+          {
+            id: 'deep-drill-3',
+            severity: 'good',
+            title: 'Strong quarter distribution',
+            detail: `Q1 and Q2 hold the bulk of records (${qb.Q1 || 0}/${qb.Q2 || 0}), indicating steady upstream throughput.`,
+            recommendation: 'Maintain current ingestion cadence and monitor Q4 for tail-end accumulation.',
+          },
         ],
         recommendations: [
-          'Enforce strict DD/MM/YYYY or YYYY-MM-DD prefix naming conventions for all incoming invoices.',
-          'Consolidate duplicates identified in /Backup into a single read-only archive.',
-          'Migrate legacy DOC files in /Procurement to DOCX standard for automated metadata extraction.'
+          `Deduplicate approximately ${dupMB.toFixed(1)} MB of redundant payloads and archive the single source of truth.`,
+          'Enforce strict YYYY-MM-DD naming prefixes and embedded metadata capture for all incoming records.',
+          'Re-compress legacy uncompressed archives to reclaim storage headroom.',
+          'Schedule quarterly integrity scans to keep the audit trail continuous.',
         ],
-        complianceRating: '97.4% High Integrity',
-        duplicateSavingsAdvice: `Removing detected duplicate payroll sheets and backup archives will reclaim approx ${(summaryData.duplicateSavingsMB || 1.8).toFixed(1)} GB of USB storage without risking data loss.`
       };
 
-      return res.json({ success: true, insights: mockInsight, source: 'synthetic' });
+      return res.json({ success: true, report: mockReport, source: 'synthetic' });
     } catch (err: any) {
-      console.error('AI Insights endpoint error:', err);
-      res.status(500).json({ error: 'Failed to generate AI insights', details: err.message });
+      console.error('Well Findings endpoint error:', err);
+      res.status(500).json({ error: 'Failed to generate well findings', details: err.message });
     }
   });
 
@@ -119,8 +215,8 @@ Return ONLY valid JSON matching this structure.`;
         return res.status(400).json({ error: 'Missing fileName payload' });
       }
 
-      // If GEMINI_API_KEY is available, make real Gemini API call
-      if (process.env.GEMINI_API_KEY) {
+      // If GROQ_API_KEY is available, make real Groq API call
+      if (groqApiKey) {
         const prompt = `You are a document metadata specialist. Analyze this scanned document excerpt and return ONLY valid JSON with keys:
 - "documentType": string (e.g. "Quarterly Report", "Invoice", "Contract", "Financial Statement")
 - "effectiveDate": string (best estimate YYYY-MM-DD or "Unknown")
@@ -135,17 +231,30 @@ Metadata: ${JSON.stringify(metadata || {})}
 Document text excerpt:
 ${(text || '').slice(0, 6000)}`;
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
+        const response = await fetch(GROQ_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${groqApiKey}`,
           },
+          body: JSON.stringify({
+            model: GROQ_MODEL,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.2,
+            response_format: { type: 'json_object' },
+          }),
         });
 
-        const responseText = response.text || '';
-        const parsed = JSON.parse(responseText);
-        return res.json({ success: true, insights: parsed, source: 'gemini' });
+        if (!response.ok) {
+          throw new Error(`Groq API error ${response.status}: ${await response.text()}`);
+        }
+
+        const groqData = await response.json();
+        const content = groqData?.choices?.[0]?.message?.content;
+        if (!content) throw new Error('Empty Groq response');
+
+        const parsed = JSON.parse(content);
+        return res.json({ success: true, insights: parsed, source: 'groq' });
       }
 
       // Fallback deterministic insights when offline / key absent

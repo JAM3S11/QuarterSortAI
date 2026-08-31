@@ -18,11 +18,14 @@ import { CommandPalette } from './components/CommandPalette';
 import { LandingPage } from './components/LandingPage';
 import { ScannedFile, USBVolumeInfo, FilterOptions, QuarterId, MonthName, CyberScanLog, PhysicalDisk } from './types';
 import { SAMPLE_FILES, SAMPLE_USB_INFO } from './lib/sampleUSBData';
-import { scanFileList } from './lib/scannerEngine';
+import { scanFileList, scanUSBDirectoryHandle } from './lib/scannerEngine';
 import { matchPhysicalDisk } from './lib/diskMatch';
 import { saveScannedIndexToDB, clearScannedIndexFromDB } from './lib/indexedDB';
+import { detectFilePickerCapability } from './lib/deviceInfo';
 
 const LAST_DRIVE_KEY = 'quartersort.lastDriveId';
+
+const FILE_PICKER_CAPS = detectFilePickerCapability();
 
 export default function App() {
   const [scannedFiles, setScannedFiles] = useState<ScannedFile[]>([]);
@@ -116,62 +119,102 @@ export default function App() {
     performConnectUSB();
   };
 
-  const performConnectUSB = () => {
+  const applyScanResult = async (result: { files: ScannedFile[]; volumeInfo: USBVolumeInfo }) => {
+    const rootName =
+      result.files[0]?.relativePath.split('/')[0] ??
+      result.files[0]?.folderPath?.split('/').filter(Boolean)[0] ??
+      '';
+    let matchedDisk = matchPhysicalDisk(physicalDisks, rootName);
+
+    let finalVolume = result.volumeInfo;
+    if (matchedDisk) {
+      finalVolume = applyRealDriveInfo(result.volumeInfo, matchedDisk);
+    } else {
+      const preselected = selectedDiskId ? physicalDisks.find((d) => d.id === selectedDiskId) ?? null : null;
+      if (preselected) {
+        matchedDisk = preselected;
+        finalVolume = applyRealDriveInfo(result.volumeInfo, preselected);
+      } else if (physicalDisks.length > 0) {
+        setDriveConfirmRoot(rootName);
+        setDriveConfirmDisks(physicalDisks);
+        setIsDriveConfirmOpen(true);
+      }
+    }
+
+    if (matchedDisk) {
+      localStorage.setItem(LAST_DRIVE_KEY, matchedDisk.id);
+      setSelectedDiskId(matchedDisk.id);
+    }
+
+    setScannedFiles(result.files);
+    setVolumeInfo(finalVolume);
+    await saveScannedIndexToDB(result.files, finalVolume);
+  };
+
+  const reportProgress = (prog: {
+    scannedFilesCount: number;
+    scannedFoldersCount: number;
+    totalBytes: number;
+    currentFolder: string;
+    currentFileName: string;
+    logs: CyberScanLog[];
+    isComplete: boolean;
+    filesBatch: ScannedFile[];
+  }) => {
+    setScanProgress({
+      scannedCount: prog.scannedFilesCount,
+      folderCount: prog.scannedFoldersCount,
+      totalBytes: prog.totalBytes,
+      currentFolder: prog.currentFolder,
+      currentFileName: prog.currentFileName,
+      logs: prog.logs,
+      isComplete: prog.isComplete,
+    });
+    if (prog.filesBatch.length > 0) {
+      setScannedFiles(prog.filesBatch);
+    }
+  };
+
+  const performConnectUSB = async () => {
+    // Desktop Chromium (and modern Android Chrome): use the File System Access API
+    // for real read-only directory traversal.
+    if (FILE_PICKER_CAPS.supportsDirectoryPicker) {
+      try {
+        const dirHandle = await (window as any).showDirectoryPicker();
+        if (!dirHandle) return;
+        setIsScanning(true);
+        const result = await scanUSBDirectoryHandle(dirHandle, reportProgress, { enableOCR: ocrEnabled });
+        await applyScanResult(result);
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return; // user cancelled the picker
+        console.warn('Directory picker unavailable, falling back to file input:', err);
+      }
+    }
     triggerFileInputFallback();
   };
 
   const triggerFileInputFallback = () => {
     const input = document.createElement('input');
     input.type = 'file';
-    (input as any).webkitdirectory = true;
+
+    // Both folder inputs and multi-file inputs use `multiple`; webkitdirectory turns
+    // the picker into a folder selector (works on desktop browsers and Android/iOS),
+    // while plain `multiple` (mobile fallback) lets users pick several files or a folder
+    // from the native Files app.
     input.multiple = true;
 
+    if (FILE_PICKER_CAPS.supportsWebkitDirectory || !FILE_PICKER_CAPS.isMobile) {
+      (input as any).webkitdirectory = true;
+    }
+
     input.onchange = async (e: any) => {
-      const filesList = e.target.files;
+      const filesList = e.target.files as FileList | null;
       if (!filesList || filesList.length === 0) return;
 
       setIsScanning(true);
-      const result = await scanFileList(filesList, (prog) => {
-        setScanProgress({
-          scannedCount: prog.scannedFilesCount,
-          folderCount: prog.scannedFoldersCount,
-          totalBytes: prog.totalBytes,
-          currentFolder: prog.currentFolder,
-          currentFileName: prog.currentFileName,
-          logs: prog.logs,
-          isComplete: prog.isComplete,
-        });
-        if (prog.filesBatch.length > 0) {
-          setScannedFiles(prog.filesBatch);
-        }
-      }, { enableOCR: ocrEnabled });
-
-      const rootName = result.files[0]?.relativePath.split('/')[0] ?? '';
-      let matchedDisk = matchPhysicalDisk(physicalDisks, rootName);
-
-      let finalVolume = result.volumeInfo;
-      if (matchedDisk) {
-        finalVolume = applyRealDriveInfo(result.volumeInfo, matchedDisk);
-      } else {
-        const preselected = selectedDiskId ? physicalDisks.find((d) => d.id === selectedDiskId) ?? null : null;
-        if (preselected) {
-          matchedDisk = preselected;
-          finalVolume = applyRealDriveInfo(result.volumeInfo, preselected);
-        } else if (physicalDisks.length > 0) {
-          setDriveConfirmRoot(rootName);
-          setDriveConfirmDisks(physicalDisks);
-          setIsDriveConfirmOpen(true);
-        }
-      }
-
-      if (matchedDisk) {
-        localStorage.setItem(LAST_DRIVE_KEY, matchedDisk.id);
-        setSelectedDiskId(matchedDisk.id);
-      }
-
-      setScannedFiles(result.files);
-      setVolumeInfo(finalVolume);
-      await saveScannedIndexToDB(result.files, finalVolume);
+      const result = await scanFileList(filesList, reportProgress, { enableOCR: ocrEnabled });
+      await applyScanResult(result);
     };
 
     input.click();
@@ -390,6 +433,7 @@ export default function App() {
         isOpen={showConnectConfirm}
         disks={physicalDisks}
         selectedDiskId={selectedDiskId}
+        isMobile={FILE_PICKER_CAPS.isMobile}
         onSelectDisk={handleSelectDisk}
         onRefreshDisks={fetchPhysicalDisks}
         onAccept={handleConnectAccept}

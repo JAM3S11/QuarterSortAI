@@ -174,6 +174,59 @@ export interface AIInsightReport {
   timestamp: string;
 }
 
+export interface WellFinding {
+  id: string;
+  severity: 'critical' | 'warning' | 'good';
+  title: string;
+  detail: string;
+  recommendation: string;
+}
+
+export type WellAuditSectionKey =
+  | 'quarterDistribution'
+  | 'categoryBreakdown'
+  | 'duplicates'
+  | 'metadataIntegrity'
+  | 'storageOptimization'
+  | 'organizationalStructure';
+
+export interface WellAuditSection {
+  key: WellAuditSectionKey;
+  title: string;
+  status: 'pass' | 'warning' | 'fail';
+  metric: string;
+  summary: string;
+}
+
+export interface WellFindingsReport {
+  summary: string;
+  score: number;
+  grade: string;
+  complianceRating: string;
+  riskAssessment: string;
+  sections: WellAuditSection[];
+  findings: WellFinding[];
+  recommendations: string[];
+  source: 'groq' | 'synthetic' | null;
+  model?: string;
+  timestamp: string;
+}
+
+export type DeviceKind = 'phone' | 'tablet' | 'desktop';
+
+export interface ConnectedDevice {
+  id: string;
+  name: string;
+  type: DeviceKind;
+  os: string;
+  browser: string;
+  isCurrent: boolean;
+  status: 'active' | 'linked' | 'signed-in' | 'offline';
+  lastSeen: string; // ISO timestamp
+  ipHint: string;
+  detail: string;
+}
+
 export interface CyberScanLog {
   timestamp: string;
   type: 'INFO' | 'SCAN' | 'HASH' | 'QUARTER' | 'WARN' | 'SUCCESS';

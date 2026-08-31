@@ -7,6 +7,7 @@ import { DocRenderer } from './DocRenderer';
 import { SheetRenderer } from './SheetRenderer';
 import { SlideRenderer } from './SlideRenderer';
 import { TextRenderer } from './TextRenderer';
+import { UnsupportedFile } from './UnsupportedFile';
 import { TocPanel } from './TocPanel';
 import { InsightsPanel } from './InsightsPanel';
 import { CommentsPanel } from './CommentsPanel';
@@ -91,10 +92,18 @@ const VIEWER_STYLES = `
   mark.qso-pdf-match-active { background: rgba(255, 140, 0, 0.65); }
 `;
 
-const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'tif', 'tiff'];
+const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'tif', 'tiff', 'ico', 'icns', 'avif'];
 const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac'];
 const VIDEO_EXTS = ['mp4', 'webm', 'mov', 'mkv', 'avi'];
 const TEXT_EXTS = ['txt', 'md', 'log', 'json', 'xml', 'yaml', 'yml', 'ini', 'cfg', 'env', 'sh', 'bat', 'ps1', 'py', 'js', 'ts', 'html', 'css', 'sql', 'rtf'];
+
+const PREVIEWABLE_EXTS = new Set([
+  'docx', 'pdf', 'doc', 'xlsx', 'xls', 'csv', 'pptx',
+  ...TEXT_EXTS,
+  ...IMAGE_EXTS,
+  ...AUDIO_EXTS,
+  ...VIDEO_EXTS,
+]);
 
 interface DocumentViewerProps {
   file: ScannedFile | null;
@@ -386,7 +395,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
   if (!file) return null;
 
   const ext = file.extension.toLowerCase();
-  const isPaged = !['xlsx', 'xls', 'csv', 'pptx'].includes(ext) && !IMAGE_EXTS.includes(ext) && !AUDIO_EXTS.includes(ext) && !VIDEO_EXTS.includes(ext);
+  const isPaged = !['xlsx', 'xls', 'csv', 'pptx'].includes(ext) && !IMAGE_EXTS.includes(ext) && !AUDIO_EXTS.includes(ext) && !VIDEO_EXTS.includes(ext) && PREVIEWABLE_EXTS.has(ext);
 
   const commonProps: ViewerRenderProps = {
     file,
@@ -416,6 +425,9 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
     if (TEXT_EXTS.includes(ext)) return <TextRenderer key={file.path} {...commonProps} />;
     if (IMAGE_EXTS.includes(ext) || AUDIO_EXTS.includes(ext) || VIDEO_EXTS.includes(ext)) {
       return <MediaViewer key={file.path} file={file} />;
+    }
+    if (!PREVIEWABLE_EXTS.has(ext)) {
+      return <UnsupportedFile key={file.path} file={file} />;
     }
     return <TextRenderer key={file.path} {...commonProps} />;
   })();
