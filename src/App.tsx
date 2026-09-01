@@ -369,7 +369,7 @@ export default function App() {
           />
         </aside>
 
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto max-w-7xl mx-auto w-full space-y-6">
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto hide-scrollbar max-w-7xl mx-auto w-full space-y-6">
           {activeTab === 'dashboard' && (
             <QuarterCards
               files={scannedFiles}
