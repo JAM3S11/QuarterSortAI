@@ -21,10 +21,13 @@ interface ConnectConfirmationModalProps {
   disks: PhysicalDisk[];
   selectedDiskId: string;
   isMobile?: boolean;
+  ocrEnabled?: boolean;
+  onToggleOCR?: () => void;
   onSelectDisk: (id: string) => void;
   onRefreshDisks: () => void;
   onAccept: () => void;
   onDecline: () => void;
+  onLoadSample?: () => void;
 }
 
 export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> = ({
@@ -32,10 +35,13 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
   disks,
   selectedDiskId,
   isMobile,
+  ocrEnabled,
+  onToggleOCR,
   onSelectDisk,
   onRefreshDisks,
   onAccept,
   onDecline,
+  onLoadSample,
 }) => {
   useEffect(() => {
     if (!isOpen) return;
@@ -219,6 +225,36 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
               You can connect without choosing a drive — it will just use estimated capacity. Your last picked
               drive is remembered so it shows up pre-selected next time.
             </p>
+          </div>
+
+          {/* Scan options */}
+          <div className="space-y-3 pt-1">
+            {onToggleOCR && (
+              <label className="flex items-start gap-3 cursor-pointer group p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+                <button
+                  role="switch"
+                  aria-checked={ocrEnabled}
+                  onClick={onToggleOCR}
+                  className={`relative mt-0.5 w-10 h-5 rounded-full transition-colors shrink-0 ${ocrEnabled ? 'bg-emerald-600' : 'bg-slate-700'}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${ocrEnabled ? 'translate-x-5' : ''}`} />
+                </button>
+                <div className="text-xs leading-relaxed">
+                  <span className="font-medium text-slate-300 group-hover:text-slate-200">Extract dates from document content (OCR)</span>
+                  <p className="text-slate-600 mt-0.5">Downloads a ~4 MB engine on first scan. Reads dates inside images and scanned documents for more accurate quarter classification.</p>
+                </div>
+              </label>
+            )}
+
+            {onLoadSample && (
+              <button
+                onClick={onLoadSample}
+                className="w-full text-left p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition-colors group"
+              >
+                <p className="text-xs font-medium text-slate-400 group-hover:text-slate-300">No drive? Try the demo dataset instead</p>
+                <p className="text-[11px] text-slate-600 mt-0.5">Pre-loaded with sample files to explore the dashboard without connecting anything.</p>
+              </button>
+            )}
           </div>
         </div>
 

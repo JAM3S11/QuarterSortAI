@@ -328,9 +328,6 @@ export default function App() {
       {scannedFiles.length === 0 ? (
     <LandingPage
       onConnectUSB={handleConnectUSB}
-      onLoadSampleUSB={handleLoadSampleUSB}
-      ocrEnabled={ocrEnabled}
-      onToggleOCR={() => setOcrEnabled(!ocrEnabled)}
     />
       ) : (
     <div className={`h-dvh overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors ${cyberMode ? 'border-2 border-emerald-500/20 shadow-[0_0_30px_rgba(0,255,102,0.1)]' : ''}`}>
@@ -434,10 +431,13 @@ export default function App() {
         disks={physicalDisks}
         selectedDiskId={selectedDiskId}
         isMobile={FILE_PICKER_CAPS.isMobile}
+        ocrEnabled={ocrEnabled}
+        onToggleOCR={() => setOcrEnabled(!ocrEnabled)}
         onSelectDisk={handleSelectDisk}
         onRefreshDisks={fetchPhysicalDisks}
         onAccept={handleConnectAccept}
         onDecline={() => setShowConnectConfirm(false)}
+        onLoadSample={handleLoadSampleUSB}
       />
 
       <USBReplaceConfirmModal

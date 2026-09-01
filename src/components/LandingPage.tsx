@@ -3,14 +3,11 @@ import { motion } from 'motion/react';
 import { UilSorting } from '@iconscout/react-unicons';
 import {
   FolderTree, BarChart3, Copy, BrainCircuit, ShieldCheck,
-  HardDrive, ChevronRight, Hash, Layers, ArrowRight, ScanLine,
+  HardDrive, ChevronRight, Hash, Layers, ArrowRight, Lock,
 } from 'lucide-react';
 
 interface LandingPageProps {
   onConnectUSB: () => void;
-  onLoadSampleUSB: () => void;
-  ocrEnabled: boolean;
-  onToggleOCR: () => void;
 }
 
 const container = {
@@ -32,10 +29,9 @@ const features = [
   { icon: ShieldCheck, title: 'Read-Only Indexing', desc: 'The scanner never writes to the source drive. All classification data lives in IndexedDB in the browser.' },
 ];
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB, onLoadSampleUSB, ocrEnabled, onToggleOCR }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500/20">
-      <style>{`@keyframes pulse-dot { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }`}</style>
 
       <header className="relative z-10 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
@@ -45,7 +41,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB, onLoadSa
             </div>
             <span className="text-sm font-semibold tracking-tight">QuarterSort<span className="text-emerald-400">AI</span></span>
           </div>
-          <button onClick={onLoadSampleUSB} className="text-xs font-medium text-slate-600 hover:text-slate-400 transition-colors">Demo dataset</button>
         </div>
       </header>
 
@@ -59,70 +54,70 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB, onLoadSa
           <div className="grid gap-16 lg:grid-cols-5 lg:gap-20">
             <motion.div className="lg:col-span-3" variants={container} initial="hidden" animate="show">
               <motion.h1 variants={item} className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-5xl xl:text-6xl leading-[1.1]">
-                Know what's on<br />your USB drive.
+                Every file,<br />classified and<br /><span className="text-emerald-400">audit-ready.</span>
               </motion.h1>
 
               <motion.p variants={item} className="mt-5 max-w-lg text-base leading-relaxed text-slate-400">
-                Connect any USB drive and QuarterSort AI will scan, hash, and classify every file by financial quarter. No uploads, no modification — everything stays local.
+                Plug in any USB drive or folder. QuarterSort AI scans every file, assigns it to the correct financial quarter, and builds a tamper-proof index — all without a single byte leaving your machine.
               </motion.p>
 
               <motion.div variants={item} className="mt-8">
                 <button onClick={onConnectUSB} className="group inline-flex h-12 items-center gap-2.5 rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition-all hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.97]">
                   <HardDrive className="h-4 w-4" />
-                  Connect USB drive
+                  Scan my USB drive
                   <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </button>
               </motion.div>
 
-              {/* OCR Toggle */}
-              <motion.div variants={item} className="mt-5">
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <button
-                    role="switch"
-                    aria-checked={ocrEnabled}
-                    onClick={onToggleOCR}
-                    className={`relative mt-0.5 w-10 h-5 rounded-full transition-colors shrink-0 ${ocrEnabled ? 'bg-emerald-600' : 'bg-slate-700'}`}
-                  >
-                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${ocrEnabled ? 'translate-x-5' : ''}`} />
-                  </button>
-                  <div className="text-xs leading-relaxed">
-                    <span className="font-medium text-slate-300 group-hover:text-slate-200">Extract dates from document content</span>
-                    <p className="text-slate-600 mt-0.5">Uses OCR to read dates inside images and scanned documents. Slower, but more accurate for reports.</p>
-                    {ocrEnabled && <span className="inline-block mt-1 text-[10px] font-mono text-amber-500/80">tesseract.js ~4 MB will be loaded</span>}
-                  </div>
-                </label>
-              </motion.div>
-
-              <motion.div variants={item} className="mt-6 flex items-center gap-6 text-xs text-slate-600">
-                <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-emerald-500/60" /> Files never leave</span>
-                <span className="flex items-center gap-1.5"><Hash className="h-3.5 w-3.5 text-emerald-500/60" /> SHA-256 hashed</span>
-                <span className="flex items-center gap-1.5"><ScanLine className="h-3.5 w-3.5 text-emerald-500/60" /> Read-only scan</span>
+              <motion.div variants={item} className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
+                <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-emerald-500/60" /> Read-only</span>
+                <span className="flex items-center gap-1.5"><Lock className="h-3.5 w-3.5 text-emerald-500/60" /> Zero network access</span>
+                <span className="flex items-center gap-1.5"><Hash className="h-3.5 w-3.5 text-emerald-500/60" /> SHA-256 integrity</span>
+                <span className="flex items-center gap-1.5"><FolderTree className="h-3.5 w-3.5 text-emerald-500/60" /> Q1–Q4 auto-classified</span>
               </motion.div>
             </motion.div>
 
             <motion.div className="lg:col-span-2 flex items-center justify-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}>
-              <div className="relative h-72 w-full max-w-xs">
-                <div className="h-full w-full rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-2xl shadow-emerald-500/5 backdrop-blur-sm">
-                  <div className="mb-4 flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-slate-700" /><span className="h-2 w-2 rounded-full bg-slate-700" /><span className="h-2 w-2 rounded-full bg-slate-700" />
-                    <span className="ml-2 text-[11px] font-mono text-slate-600">scanner daemon</span>
+              <div className="relative w-full max-w-sm">
+                <div className="w-full rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-2xl shadow-emerald-500/5 backdrop-blur-sm">
+                  <div className="mb-4 flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Quarter Summary</span>
+                    <span className="flex items-center gap-1.5 text-[10px] text-emerald-500/80">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      local scan
+                    </span>
                   </div>
-                  <div className="space-y-2.5 font-mono text-[11px] leading-relaxed">
-                    <p className="text-slate-600"><span className="text-emerald-500/70">$</span> mount /dev/sda1 /mnt/usb</p>
-                    <p className="text-emerald-400/80"><span className="text-emerald-500/70">✓</span> mounted <span className="text-slate-500">(32 GB, FAT32)</span></p>
-                    <p className="text-slate-600"><span className="text-emerald-500/70">$</span> scan --classify --hash sha256</p>
-                    <div className="flex items-center gap-1 text-emerald-500">
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" style={{ animation: 'pulse-dot 1.4s ease-in-out infinite' }} />
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" style={{ animation: 'pulse-dot 1.4s ease-in-out 0.3s infinite' }} />
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" style={{ animation: 'pulse-dot 1.4s ease-in-out 0.6s infinite' }} />
-                      <span className="ml-1.5 text-slate-500">scanning 248 files...</span>
-                    </div>
-                    <p className="text-slate-600"><span className="text-emerald-500/70">$</span> classifying by quarter</p>
-                    <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center justify-between text-[10px] text-slate-600"><span>Q1 (Jul–Sep)</span><span>43%</span></div>
-                      <div className="h-1 rounded-full bg-slate-800"><div className="h-1 w-[43%] rounded-full bg-emerald-500/60" /></div>
-                    </div>
-                    <p className="text-emerald-400/80"><span className="text-emerald-500/70">✓</span> scan complete. <span className="text-slate-500">248 files · 36 folders</span></p>
+
+                  <div className="space-y-2.5">
+                    {[
+                      { label: 'Q1 · Jul–Sep', pct: 43, count: 43, color: 'bg-emerald-500/70' },
+                      { label: 'Q2 · Oct–Dec', pct: 28, count: 28, color: 'bg-cyan-500/70' },
+                      { label: 'Q3 · Jan–Mar', pct: 52, count: 52, color: 'bg-blue-500/70' },
+                      { label: 'Q4 · Apr–Jun', pct: 41, count: 41, color: 'bg-violet-500/70' },
+                    ].map((q) => (
+                      <div key={q.label} className="space-y-1">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="text-slate-400 font-medium">{q.label}</span>
+                          <span className="font-mono text-slate-500">{q.count} files</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-slate-800">
+                          <motion.div
+                            className={`h-full rounded-full ${q.color}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${q.pct}%` }}
+                            transition={{ duration: 1.2, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[10px] text-slate-500">
+                    <span>164 files · 36 folders</span>
+                    <span className="flex items-center gap-1 text-emerald-500/70">
+                      <ShieldCheck className="w-3 h-3" />
+                      SHA-256 verified
+                    </span>
                   </div>
                 </div>
               </div>
@@ -162,8 +157,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB, onLoadSa
       <section className="border-t border-slate-800/60">
         <div className="mx-auto max-w-6xl px-6 py-16 lg:py-20">
           <motion.div className="text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500">Capabilities</p>
-            <h2 className="text-2xl font-bold sm:text-3xl">Everything you need to audit a drive.</h2>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500">Built for compliance</p>
+            <h2 className="text-2xl font-bold sm:text-3xl">What happens after you connect.</h2>
           </motion.div>
 
           <motion.div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
@@ -182,9 +177,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB, onLoadSa
       </section>
 
       <footer className="border-t border-slate-800/60">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6 text-[11px] text-slate-600">
-          <span>QuarterSort AI</span>
-          <button onClick={onLoadSampleUSB} className="hover:text-slate-400 transition-colors">Try demo dataset</button>
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-center px-6 text-[11px] text-slate-600">
+          <span>QuarterSort AI — scan, classify, analyze. All local.</span>
         </div>
       </footer>
     </div>

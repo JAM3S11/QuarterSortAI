@@ -137,7 +137,7 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
           </div>
 
           {/* Center & Right Column: Live Counters & Stats */}
-          <div className="md:col-span-2 grid grid-cols-2 gap-3">
+          <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 flex items-center space-x-3">
               <HardDrive className="w-7 h-7 text-cyan-400" />
               <div>
@@ -167,13 +167,13 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
         </div>
 
         {/* Terminal Logs Stream */}
-        <div className="p-4 bg-slate-950 border-t border-slate-800 flex-1 min-h-[180px] max-h-[260px] overflow-y-auto">
+        <div className="p-4 bg-slate-950 border-t border-slate-800 flex-1 min-h-0 max-h-[40vh] overflow-y-auto overflow-x-hidden">
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-2 pb-1 border-b border-slate-900">
             <Terminal className="w-3.5 h-3.5 text-emerald-400" />
             <span>REAL-TIME AUDIT LOG STREAM</span>
           </div>
 
-          <div className="space-y-1 text-[11px] font-mono leading-relaxed">
+          <div className="space-y-1 text-[11px] font-mono leading-relaxed break-all">
             {logs.map((log, index) => {
               let color = 'text-slate-300';
               if (log.type === 'INFO') color = 'text-cyan-400';
@@ -183,9 +183,9 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
               if (log.type === 'SUCCESS') color = 'text-emerald-300 font-extrabold';
 
               return (
-                <div key={index} className="flex space-x-2">
-                  <span className="text-slate-600 select-none">[{log.timestamp}]</span>
-                  <span className={color}>{log.message}</span>
+                <div key={index} className="flex space-x-2 min-w-0">
+                  <span className="text-slate-600 select-none shrink-0">[{log.timestamp}]</span>
+                  <span className={`${color} min-w-0 break-all`}>{log.message}</span>
                 </div>
               );
             })}
