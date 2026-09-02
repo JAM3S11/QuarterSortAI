@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { readFileBlob } from '../../lib/blob';
 import { ViewerRenderProps } from './types';
 import { PRINT_PAGE_CSS, canvasToImgHtml } from '../../lib/printSupport';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const SlideRenderer: React.FC<ViewerRenderProps> = (props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -112,9 +113,10 @@ export const SlideRenderer: React.FC<ViewerRenderProps> = (props) => {
             <button
               onClick={() => goToSlide(currentSlide - 1)}
               disabled={currentSlide <= 0}
-              className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-1.5 p-2 sm:px-4 sm:py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
-              Previous
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline text-xs font-bold">Previous</span>
             </button>
             <span className="text-xs font-bold text-slate-500 font-mono min-w-[80px] text-center">
               {slideCount > 0 ? `${currentSlide + 1} / ${slideCount}` : '—'}
@@ -122,9 +124,10 @@ export const SlideRenderer: React.FC<ViewerRenderProps> = (props) => {
             <button
               onClick={() => goToSlide(currentSlide + 1)}
               disabled={currentSlide >= slideCount - 1}
-              className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-1.5 p-2 sm:px-4 sm:py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
-              Next
+              <span className="hidden sm:inline text-xs font-bold">Next</span>
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </>

@@ -47,9 +47,9 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
   const btn = 'p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-slate-700/70 text-slate-500 dark:text-slate-300 transition-colors disabled:opacity-30 disabled:pointer-events-none';
 
   return (
-    <div className="px-3 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex flex-wrap items-center gap-x-3 gap-y-2 shrink-0">
+    <div className="px-3 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center gap-x-3 gap-y-2 shrink-0 overflow-x-auto thin-scrollbar-x">
       {/* File identity */}
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-2 min-w-0 shrink-0">
         <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors" title="Close viewer">
           <X className="w-5 h-5" />
         </button>
@@ -58,7 +58,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 truncate max-w-[180px] sm:max-w-xs">{file.name}</h3>
+            <h3 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 truncate max-w-[120px] sm:max-w-xs">{file.name}</h3>
             <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded whitespace-nowrap">
               <Lock className="w-2.5 h-2.5" /> Read-Only
             </span>
@@ -66,14 +66,14 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
               {file.classification.quarter} · {formatSize(file.size)}
             </span>
           </div>
-          <p className="text-[10px] text-slate-400 font-mono truncate max-w-[220px] sm:max-w-md">{file.path}</p>
+          <p className="hidden sm:block text-[10px] text-slate-400 font-mono truncate max-w-[220px] sm:max-w-md">{file.path}</p>
         </div>
       </div>
 
-      <div className="flex-1" />
+      <div className="flex-1 shrink-0" />
 
       {/* Page navigation */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 shrink-0">
         <button onClick={onPrev} disabled={currentPage <= 1} className={btn} title="Previous page">
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -84,7 +84,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
             max={pageCount || 1}
             value={currentPage}
             onChange={(e) => onGoToPage(parseInt(e.target.value || '1', 10))}
-            className="w-10 bg-transparent text-center text-xs font-bold text-slate-800 dark:text-slate-200 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-8 sm:w-10 bg-transparent text-center text-xs font-bold text-slate-800 dark:text-slate-200 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
           <span className="text-xs text-slate-400 font-medium whitespace-nowrap">/ {pageCount || '—'}</span>
         </div>
@@ -94,7 +94,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
       </div>
 
       {/* Zoom */}
-      <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5">
+      <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5 shrink-0">
         <button onClick={() => onZoomChange(Math.max(0.25, Math.round((scale - 0.25) * 100) / 100), 'custom')} className={btn} title="Zoom out">
           <ZoomOut className="w-4 h-4" />
         </button>
@@ -122,7 +122,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
       </div>
 
       {/* Search */}
-      <div className="flex items-center gap-1">
+      <div className="hidden md:flex items-center gap-1 shrink-0">
         <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg px-2 py-1">
           <Search className="w-3.5 h-3.5 text-slate-400" />
           <input
@@ -149,7 +149,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
       </div>
 
       {/* Panel toggles */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={onToggleToc}
           className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
@@ -186,7 +186,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
 
       <button
         onClick={onPrint}
-        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+        className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shrink-0"
         title="Print — choose a printer"
       >
         <Printer className="w-3.5 h-3.5" /> Print
@@ -194,7 +194,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({
 
       <button
         onClick={onDownload}
-        className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+        className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors shrink-0"
       >
         <Download className="w-3.5 h-3.5" /> Save Copy
       </button>

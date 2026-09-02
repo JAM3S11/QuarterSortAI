@@ -134,7 +134,7 @@ const MediaViewer: React.FC<{ file: ScannedFile }> = ({ file }) => {
   }, [file]);
   const ext = file.extension.toLowerCase();
   return (
-    <div className="flex-1 overflow-auto flex items-center justify-center p-6 bg-slate-100 dark:bg-slate-950">
+    <div className="flex-1 overflow-auto flex items-center justify-center p-2 sm:p-6 bg-slate-100 dark:bg-slate-950">
       {!url && <div className="text-xs text-slate-400">No binary available for preview.</div>}
       {url && IMAGE_EXTS.includes(ext) && (
         <img src={url} alt={file.name} className="max-w-full max-h-full rounded-lg shadow-xl bg-white" />
@@ -155,7 +155,9 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
   const [activeMatch, setActiveMatch] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
   const [tocItems, setTocItems] = useState<TocItem[]>([]);
-  const [rightPanel, setRightPanel] = useState<'insights' | 'comments' | null>('insights');
+  const [rightPanel, setRightPanel] = useState<'insights' | 'comments' | null>(() =>
+    typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'insights' : null
+  );
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [insights, setInsights] = useState<DocumentInsights | null>(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
@@ -184,7 +186,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
     setExtractedText('');
     setScale(1);
     setScaleMode('fitWidth');
-    setRightPanel('insights');
+    setRightPanel(typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'insights' : null);
     tocAutoOpenedRef.current = null;
     aiFetchedRef.current = null;
   }, [file]);
@@ -437,7 +439,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
       <style>{VIEWER_STYLES}</style>
       <div
         ref={modalRef}
-        className="relative w-full max-w-[1700px] h-[96vh] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+        className="relative w-full max-w-[1700px] h-[96dvh] max-h-[96vh] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
       >
         <ViewToolbar
           file={file}
@@ -470,7 +472,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
 
         <div className="flex-1 flex overflow-hidden">
           {tocOpen && tocItems.length > 0 && (
-            <aside className="absolute inset-y-0 left-0 z-30 w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shadow-xl md:shadow-none md:static">
+            <aside className="absolute inset-y-0 left-0 z-30 w-64 max-w-[85vw] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shadow-xl md:shadow-none md:static">
               <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-800">
                 <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-300">Contents</span>
                 <button onClick={() => setTocOpen(false)} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
@@ -488,7 +490,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
           <div className="flex-1 flex flex-col overflow-hidden relative">{renderer}</div>
 
           {rightPanel && (
-            <aside className="absolute inset-y-0 right-0 z-30 w-80 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shadow-xl lg:shadow-none lg:static">
+            <aside className="absolute inset-y-0 right-0 z-30 w-80 max-w-[85vw] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shadow-xl lg:shadow-none lg:static">
               <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-800 shrink-0">
                 <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-300">
                   {rightPanel === 'insights' ? 'Insights' : 'Comments'}

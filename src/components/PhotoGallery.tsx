@@ -622,12 +622,12 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
 
       {/* Fullscreen Photo Lightbox Modal */}
       {selectedFile && (
-        <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative w-full max-w-6xl h-[90vh] bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col md:flex-row">
+        <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+          <div className="relative w-full max-w-6xl h-[90dvh] max-h-[90vh] bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col md:flex-row">
             {/* Main Stage View */}
-            <div className="flex-1 relative bg-slate-950 flex items-center justify-center overflow-hidden p-6">
+            <div className="flex-1 relative bg-slate-950 flex items-center justify-center overflow-hidden p-2 sm:p-6">
               {/* Top controls */}
-              <div className="absolute top-4 left-4 z-20 flex items-center space-x-2 bg-slate-900/80 border border-slate-800 p-1.5 rounded-xl text-slate-200">
+              <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-20 flex items-center space-x-1 sm:space-x-2 bg-slate-900/80 border border-slate-800 p-1.5 rounded-xl text-slate-200">
                 <button
                   onClick={() => setZoomLevel((z) => Math.min(z + 0.5, 5))}
                   title="Zoom In"
@@ -657,7 +657,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
               {/* Close Button */}
               <button
                 onClick={() => setSelectedId(null)}
-                className="absolute top-4 right-4 z-20 p-2 bg-slate-900/80 border border-slate-800 text-slate-200 hover:bg-slate-800 rounded-xl"
+                className="absolute top-2 sm:top-4 right-2 sm:right-4 z-20 p-2 bg-slate-900/80 border border-slate-800 text-slate-200 hover:bg-slate-800 rounded-xl"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -675,15 +675,15 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
               {/* Navigation Arrows */}
               <button
                 onClick={handlePrev}
-                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-slate-900/80 border border-slate-800 hover:bg-slate-800 text-slate-200 rounded-full"
+                className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-slate-900/80 border border-slate-800 hover:bg-slate-800 text-slate-200 rounded-full"
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-5 sm:w-6 h-5 sm:h-6" />
               </button>
               <button
                 onClick={handleNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-slate-900/80 border border-slate-800 hover:bg-slate-800 text-slate-200 rounded-full"
+                className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-slate-900/80 border border-slate-800 hover:bg-slate-800 text-slate-200 rounded-full"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-5 sm:w-6 h-5 sm:h-6" />
               </button>
             </div>
 
@@ -793,7 +793,7 @@ const LightboxStage: React.FC<{ file: ScannedFile }> = ({ file }) => {
         src={url}
         alt={file.name}
         onError={() => setFailed(true)}
-        className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl"
+        className="max-w-full max-h-[60vh] sm:max-h-[70vh] object-contain rounded-xl shadow-2xl"
         draggable={false}
       />
     );

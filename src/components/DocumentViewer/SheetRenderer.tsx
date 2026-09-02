@@ -175,7 +175,7 @@ export const SheetRenderer: React.FC<ViewerRenderProps> = (props) => {
           )}
           <div ref={gridRef} className="p-4">
             <div className="inline-block min-w-full">
-              <table className="text-xs border-collapse font-mono">
+              <table className="text-xs border-collapse font-mono min-w-[640px]">
                 <thead>
                   <tr className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10">
                     {sheet.rows[0]?.map((col, i) => (
