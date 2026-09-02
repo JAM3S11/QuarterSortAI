@@ -22,8 +22,10 @@ import { scanFileList, scanUSBDirectoryHandle } from './lib/scannerEngine';
 import { matchPhysicalDisk } from './lib/diskMatch';
 import { saveScannedIndexToDB, clearScannedIndexFromDB } from './lib/indexedDB';
 import { detectFilePickerCapability } from './lib/deviceInfo';
+import { pickAndMeasureDrive, measureDriveFromHandle, supportsDirectoryPicker } from './lib/browserDrives';
 
 const LAST_DRIVE_KEY = 'quartersort.lastDriveId';
+const BROWSER_DRIVES_KEY = 'quartersort.browserDrives';
 
 const FILE_PICKER_CAPS = detectFilePickerCapability();
 
@@ -183,6 +185,12 @@ export default function App() {
         const dirHandle = await (window as any).showDirectoryPicker();
         if (!dirHandle) return;
         setIsScanning(true);
+        // Capture the drive the browser exposes for this root so the connect
+        // slot reflects the real detected drive (letter/label) even when the
+        // server-side /api/disk-stats endpoint isn't available (Vercel).
+        // Reuses the handle already picked above — no second picker prompt.
+        const disk = await measureDriveFromHandle(dirHandle, 400);
+        if (disk) persistBrowserDetectedDrive(disk);
         const result = await scanUSBDirectoryHandle(dirHandle, reportProgress, { enableOCR: ocrEnabled });
         await applyScanResult(result);
         return;
@@ -220,6 +228,40 @@ export default function App() {
     input.click();
   };
 
+  const loadBrowserDetectedDrives = () => {
+    try {
+      const raw = localStorage.getItem(BROWSER_DRIVES_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setPhysicalDisks(parsed);
+        const remembered = localStorage.getItem(LAST_DRIVE_KEY);
+        if (remembered && parsed.some((d) => d.id === remembered)) {
+          setSelectedDiskId(remembered);
+        }
+        return parsed;
+      }
+    } catch (err) {
+      console.warn('load browser drives failed:', err);
+    }
+    return [];
+  };
+
+  const persistBrowserDetectedDrive = (disk: PhysicalDisk) => {
+    setPhysicalDisks((prev) => {
+      const next = prev.filter((d) => d.id !== disk.id);
+      next.unshift(disk);
+      try {
+        localStorage.setItem(BROWSER_DRIVES_KEY, JSON.stringify(next));
+      } catch (err) {
+        console.warn('persist browser drive failed:', err);
+      }
+      return next;
+    });
+    setSelectedDiskId(disk.id);
+    localStorage.setItem(LAST_DRIVE_KEY, disk.id);
+  };
+
   const fetchPhysicalDisks = async () => {
     try {
       const controller = new AbortController();
@@ -227,21 +269,36 @@ export default function App() {
       const res = await fetch('/api/disk-stats', { signal: controller.signal });
       clearTimeout(timer);
       const data = await res.json();
-      if (data && Array.isArray(data.disks)) {
+      if (data && Array.isArray(data.disks) && data.disks.length > 0) {
         setPhysicalDisks(data.disks);
         const remembered = localStorage.getItem(LAST_DRIVE_KEY);
         if (remembered && data.disks.some((d) => d.id === remembered)) {
           setSelectedDiskId(remembered);
         }
+        return;
       }
+      // Server returned no drives (e.g. static Vercel hosting) — fall back to
+      // drives previously detected in-browser.
+      loadBrowserDetectedDrives();
     } catch (err) {
       console.warn('disk-stats unavailable:', err);
+      loadBrowserDetectedDrives();
     }
   };
 
   const handleSelectDisk = (id: string) => {
     setSelectedDiskId(id);
     localStorage.setItem(LAST_DRIVE_KEY, id);
+  };
+
+  const detectDriveFromPicker = async () => {
+    if (!supportsDirectoryPicker()) return;
+    try {
+      const picked = await pickAndMeasureDrive(200);
+      if (picked) persistBrowserDetectedDrive(picked.disk);
+    } catch (err: any) {
+      console.warn('browser drive detect failed:', err);
+    }
   };
 
   const applyRealDriveInfo = (vinfo: USBVolumeInfo, disk: PhysicalDisk): USBVolumeInfo => {
@@ -438,6 +495,7 @@ export default function App() {
         onAccept={handleConnectAccept}
         onDecline={() => setShowConnectConfirm(false)}
         onLoadSample={handleLoadSampleUSB}
+        onDetectFromPicker={detectDriveFromPicker}
       />
 
       <USBReplaceConfirmModal

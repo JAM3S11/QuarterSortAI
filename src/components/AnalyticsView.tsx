@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScannedFile, QuarterId, MonthName } from '../types';
+import React, { useMemo, useState } from 'react';
+import { ScannedFile, QuarterId, MonthName, FileCategory } from '../types';
 import {
   BarChart,
   Bar,
@@ -12,196 +12,484 @@ import {
   Cell,
   AreaChart,
   Area,
+  RadialBarChart,
+  RadialBar,
+  Legend,
+  CartesianGrid,
 } from 'recharts';
-import { BarChart3, PieChart as PieIcon, TrendingUp, HardDrive } from 'lucide-react';
+import {
+  BarChart3,
+  PieChart as PieIcon,
+  TrendingUp,
+  HardDrive,
+  Files,
+  Database,
+  Layers,
+  Copy,
+  Flame,
+  FileText,
+  Lightbulb,
+  FolderTree,
+  Activity,
+  Percent,
+} from 'lucide-react';
+import { formatSize } from '../lib/format';
 
 interface AnalyticsViewProps {
   files: ScannedFile[];
 }
 
+type MetricKey = 'count' | 'sizeMB';
+
+const quarterIndexMap: Record<QuarterId, number> = { Q1: 0, Q2: 1, Q3: 2, Q4: 3 };
+const monthOrder: MonthName[] = [
+  'July', 'August', 'September', 'October', 'November', 'December',
+  'January', 'February', 'March', 'April', 'May', 'June',
+];
+
+const CATEGORY_COLORS: Record<string, string> = {
+  Documents: '#10B981',
+  Images: '#06B6D4',
+  Videos: '#8B5CF6',
+  Audio: '#EC4899',
+  Archives: '#F59E0B',
+  Folders: '#6366F1',
+  Executables: '#F43F5E',
+  Other: '#94A3B8',
+};
+
+const PALETTE = ['#10B981', '#06B6D4', '#F59E0B', '#6366F1', '#EC4899', '#8B5CF6', '#14B8A6', '#F43F5E'];
+
+const TOOLTIP_STYLE = {
+  backgroundColor: '#0f172a',
+  borderColor: '#334155',
+  borderRadius: '12px',
+  fontSize: '12px',
+  color: '#fff',
+};
+
+const ALL_CATEGORIES: FileCategory[] = [
+  'Documents', 'Images', 'Videos', 'Audio', 'Archives', 'Folders', 'Executables', 'Other',
+];
+
+const emptyMonthMap = (): Record<MonthName, number> => ({
+  July: 0, August: 0, September: 0, October: 0, November: 0, December: 0,
+  January: 0, February: 0, March: 0, April: 0, May: 0, June: 0,
+});
+
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
-  // 1. Quarter Distribution
-  const quarterData: { name: string; files: number; sizeMB: number }[] = [
-    { name: 'Q1 (Jul-Sep)', files: 0, sizeMB: 0 },
-    { name: 'Q2 (Oct-Dec)', files: 0, sizeMB: 0 },
-    { name: 'Q3 (Jan-Mar)', files: 0, sizeMB: 0 },
-    { name: 'Q4 (Apr-Jun)', files: 0, sizeMB: 0 },
+  const [metric, setMetric] = useState<MetricKey>('count');
+
+  const stats = useMemo(() => {
+    const quarterData = [
+      { name: 'Q1 (Jul-Sep)', q: 'Q1', files: 0, sizeMB: 0 },
+      { name: 'Q2 (Oct-Dec)', q: 'Q2', files: 0, sizeMB: 0 },
+      { name: 'Q3 (Jan-Mar)', q: 'Q3', files: 0, sizeMB: 0 },
+      { name: 'Q4 (Apr-Jun)', q: 'Q4', files: 0, sizeMB: 0 },
+    ];
+    const categoryMap: Record<string, { count: number; sizeBytes: number }> = {};
+    const monthCountMap = emptyMonthMap();
+    const monthSizeMap: Record<MonthName, number> = { ...emptyMonthMap() } as Record<MonthName, number>;
+    const folderMap: Record<string, { count: number; sizeBytes: number }> = {};
+    const hashMap = new Map<string, number>();
+
+    let totalBytes = 0;
+    let dupFiles = 0;
+    let dupBytes = 0;
+    const seen = new Set<string>();
+
+    // quarter x category matrix (size bytes + counts)
+    const qc: Record<string, Record<string, number>> = {};
+    const qcc: Record<string, Record<string, number>> = {};
+    for (const q of ['Q1', 'Q2', 'Q3', 'Q4']) {
+      qc[q] = {};
+      qcc[q] = {};
+      for (const c of ALL_CATEGORIES) {
+        qc[q][c] = 0;
+        qcc[q][c] = 0;
+      }
+    }
+
+    for (const f of files) {
+      const qIdx = quarterIndexMap[f.classification.quarter];
+      const cat = f.category;
+      totalBytes += f.size;
+
+      if (qIdx !== undefined) {
+        quarterData[qIdx].files++;
+        quarterData[qIdx].sizeMB += f.size / (1024 * 1024);
+        qc[f.classification.quarter][cat] += f.size;
+        qcc[f.classification.quarter][cat]++;
+      }
+      if (!categoryMap[cat]) categoryMap[cat] = { count: 0, sizeBytes: 0 };
+      categoryMap[cat].count++;
+      categoryMap[cat].sizeBytes += f.size;
+
+      if (monthCountMap[f.classification.month] !== undefined) {
+        monthCountMap[f.classification.month]++;
+        monthSizeMap[f.classification.month] += f.size / (1024 * 1024);
+      }
+
+      const topDir = f.folderPath && f.folderPath !== '/' ? f.folderPath.split('/').filter(Boolean)[0] : '(root)';
+      if (!folderMap[topDir]) folderMap[topDir] = { count: 0, sizeBytes: 0 };
+      folderMap[topDir].count++;
+      folderMap[topDir].sizeBytes += f.size;
+
+      const key = `${f.path}::${f.sha256}`;
+      if (seen.has(key)) {
+        dupFiles++;
+        dupBytes += f.size;
+      } else {
+        seen.add(key);
+      }
+    }
+
+    quarterData.forEach((q) => (q.sizeMB = Number(q.sizeMB.toFixed(1))));
+
+    const categoryData = Object.entries(categoryMap)
+      .map(([name, val]) => ({
+        name,
+        count: val.count,
+        sizeMB: Number((val.sizeBytes / (1024 * 1024)).toFixed(1)),
+      }))
+      .sort((a, b) => b[metric] - a[metric]);
+
+    // quarter x category stacked data (one series per category, size + count variants)
+    const stackedData = quarterData.map((q) => {
+      const row: any = { name: q.name, quarter: q.q };
+      for (const c of ALL_CATEGORIES) row[c] = Number((qc[q.q][c] / (1024 * 1024)).toFixed(1));
+      return row;
+    });
+    const stackedCountData = quarterData.map((q) => {
+      const row: any = { name: q.name };
+      for (const c of ALL_CATEGORIES) row[c] = qcc[q.q][c];
+      return row;
+    });
+
+    const monthlyTimelineData = monthOrder.map((m) => ({
+      month: m.slice(0, 3),
+      files: monthCountMap[m] || 0,
+      sizeMB: Number((monthSizeMap[m] || 0).toFixed(1)),
+    }));
+
+    const folders = Object.entries(folderMap)
+      .map(([name, val]) => ({ name, count: val.count, sizeMB: Number((val.sizeBytes / (1024 * 1024)).toFixed(1)) }))
+      .sort((a, b) => (metric === 'count' ? b.count - a.count : b.sizeMB - a.sizeMB))
+      .slice(0, 6);
+
+    const busiestQuarterIdx = quarterData.reduce((bi, q, i, arr) => (q[metric] > arr[bi][metric] ? i : bi), 0);
+    const busiestMonth = monthOrder.reduce((best, m) => (monthCountMap[m] > monthCountMap[best] ? m : best), monthOrder[0]);
+    const busiestCategory = categoryData[0]?.name || '—';
+
+    const duplicateRate = files.length ? (dupFiles / files.length) * 100 : 0;
+
+    return {
+      totalFiles: files.length,
+      totalBytes,
+      totalFolders: Object.keys(folderMap).length,
+      dupFiles,
+      dupBytes,
+      duplicateRate,
+      avgFileBytes: files.length ? totalBytes / files.length : 0,
+      quarterData,
+      categoryData,
+      monthlyTimelineData,
+      stackedData,
+      stackedCountData,
+      qc,
+      folders,
+      busiestQuarter: quarterData[busiestQuarterIdx].name,
+      busiestMonth,
+      busiestCategory,
+    };
+  }, [files, metric]);
+
+  const largestFiles = useMemo(
+    () => [...files].sort((a, b) => b.size - a.size).slice(0, 5),
+    [files]
+  );
+
+  const kpis = [
+    { label: 'Total Files', value: stats.totalFiles.toLocaleString(), icon: Files, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { label: 'Total Storage', value: formatSize(stats.totalBytes), icon: Database, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
+    { label: 'Categories', value: String(stats.categoryData.length), icon: Layers, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+    { label: 'Directories', value: stats.totalFolders.toLocaleString(), icon: FolderTree, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { label: 'Duplicates', value: stats.dupFiles.toLocaleString(), icon: Copy, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { label: 'Avg File Size', value: formatSize(stats.avgFileBytes), icon: Activity, color: 'text-rose-500', bg: 'bg-rose-500/10' },
   ];
 
-  const quarterIndexMap: Record<QuarterId, number> = { Q1: 0, Q2: 1, Q3: 2, Q4: 3 };
+  const insights = [
+    `Your busiest quarter is ${stats.busiestQuarter} — that's where most ${metric === 'count' ? 'indexing activity' : 'storage'} is concentrated, so prioritize review/cleanup there.`,
+    `"${stats.busiestMonth}" is your most active single month.`,
+    `${stats.busiestCategory} is the dominant file category in your repository.`,
+    stats.dupFiles > 0
+      ? `You have ${stats.dupFiles} duplicate file${stats.dupFiles === 1 ? '' : 's'} (${stats.duplicateRate.toFixed(1)}% of the index, ~${formatSize(stats.dupBytes)} wasted) — revisit the Duplicate Center to reclaim space.`
+      : 'No duplicates detected — your repository is free of redundant copies.',
+    stats.totalFiles === 0
+      ? 'No files scanned yet. Connect a USB drive or load the demo dataset to see analytics.'
+      : `Average file size is ${formatSize(stats.avgFileBytes)}.`,
+    stats.folders.length > 0
+      ? `Top-level folder "${stats.folders[0].name}" holds the ${metric === 'count' ? 'most files' : 'most storage'} in this index.`
+      : '',
+  ].filter(Boolean);
 
-  // 2. Category Breakdown
-  const categoryMap: Record<string, { count: number; sizeBytes: number }> = {};
+  const toggleBtn = (key: MetricKey, label: string) => (
+    <button
+      onClick={() => setMetric(key)}
+      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
+        metric === key
+          ? 'bg-emerald-500 text-white'
+          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+      }`}
+    >
+      {label}
+    </button>
+  );
 
-  // 3. Monthly Volume Timeline
-  const monthOrder: MonthName[] = [
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
+  // Duplicate gauge data for RadialBarChart
+  const dupData = [
+    { name: 'Duplicates', value: Math.min(100, stats.duplicateRate || 0), fill: stats.duplicateRate > 15 ? '#F43F5E' : stats.duplicateRate > 5 ? '#F59E0B' : '#10B981' },
   ];
-
-  const monthCountMap: Record<MonthName, number> = {
-    July: 0,
-    August: 0,
-    September: 0,
-    October: 0,
-    November: 0,
-    December: 0,
-    January: 0,
-    February: 0,
-    March: 0,
-    April: 0,
-    May: 0,
-    June: 0,
-  };
-
-  for (const f of files) {
-    const qIdx = quarterIndexMap[f.classification.quarter];
-    if (qIdx !== undefined) {
-      quarterData[qIdx].files++;
-      quarterData[qIdx].sizeMB += f.size / (1024 * 1024);
-    }
-
-    if (!categoryMap[f.category]) {
-      categoryMap[f.category] = { count: 0, sizeBytes: 0 };
-    }
-    categoryMap[f.category].count++;
-    categoryMap[f.category].sizeBytes += f.size;
-
-    if (monthCountMap[f.classification.month] !== undefined) {
-      monthCountMap[f.classification.month]++;
-    }
-  }
-
-  quarterData.forEach((q) => (q.sizeMB = Number(q.sizeMB.toFixed(1))));
-
-  const categoryData = Object.entries(categoryMap).map(([name, val]) => ({
-    name,
-    value: val.count,
-    sizeMB: Number((val.sizeBytes / (1024 * 1024)).toFixed(1)),
-  }));
-
-  const monthlyTimelineData = monthOrder.map((m) => ({
-    month: m.slice(0, 3),
-    files: monthCountMap[m] || 0,
-  }));
-
-  const COLORS = ['#10B981', '#06B6D4', '#F59E0B', '#6366F1', '#EC4899', '#8B5CF6'];
-
-  // Top largest files
-  const largestFiles = [...files].sort((a, b) => b.size - a.size).slice(0, 5);
 
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
         <div>
           <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-emerald-500" />
             Repository Analytics & Financial Quarter Trends
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Visualizing document volume distributions, category storage consumption, and active timeline metrics
+            Volume, storage footprint, category splits, duplicates, folder economics, and timeline metrics
           </p>
         </div>
       </div>
 
-      {/* Grid Charts */}
+      {/* KPI summary cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {kpis.map((k) => {
+          const Icon = k.icon;
+          return (
+            <div key={k.label} className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-start gap-2">
+              <div className={`p-2 rounded-lg ${k.bg} ${k.color}`}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{k.label}</p>
+                <p className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono leading-tight">{k.value}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Metric toggle */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-slate-400" />
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Chart metric:</span>
+          {toggleBtn('count', 'File count')}
+          {toggleBtn('sizeMB', 'Storage (MB/GB)')}
+        </div>
+      </div>
+
+      {/* Row: Quarterly + Category */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chart 1: Financial Quarter Volume Bar Chart */}
         <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-emerald-500" />
-              Quarterly Document Volume
+              Quarterly Volume
             </h3>
-            <span className="text-[10px] font-bold uppercase text-slate-400">July - June Calendar</span>
+            <span className="text-[10px] font-bold uppercase text-slate-400">{metric === 'count' ? 'File Count' : 'Storage / Quarter'}</span>
           </div>
-
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={quarterData}>
+              <BarChart data={stats.quarterData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" strokeOpacity={0.15} vertical={false} />
                 <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} />
                 <YAxis stroke="#888888" fontSize={11} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
-                />
-                <Bar dataKey="files" fill="#10B981" radius={[8, 8, 0, 0]} name="Scanned Files" />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Bar dataKey={metric === 'count' ? 'files' : 'sizeMB'} fill="#10B981" radius={[8, 8, 0, 0]} name={metric === 'count' ? 'Scanned Files' : 'Size (MB)'} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Chart 2: Document Category Storage Pie Chart */}
         <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <PieIcon className="w-4 h-4 text-cyan-500" />
-              Document Category Breakdown
+              Category Breakdown
             </h3>
-            <span className="text-[10px] font-bold uppercase text-slate-400">File Type Count</span>
+            <span className="text-[10px] font-bold uppercase text-slate-400">{metric === 'count' ? 'File Type Count' : 'Storage Footprint'}</span>
           </div>
-
-          <div className="h-64 w-full flex items-center justify-center">
+          <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={categoryData}
+                  data={stats.categoryData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
+                  innerRadius={55}
+                  outerRadius={85}
                   paddingAngle={4}
-                  dataKey="value"
+                  dataKey={metric === 'count' ? 'count' : 'sizeMB'}
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  labelLine={false}
                 >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {stats.categoryData.map((entry, idx) => (
+                    <Cell key={`cell-${idx}`} fill={CATEGORY_COLORS[entry.name] || PALETTE[idx % PALETTE.length]} />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
-                />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
               </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Chart 3: Monthly Volume Timeline Area Chart */}
-        <div className="lg:col-span-2 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-amber-500" />
-              12-Month Document Ingestion Timeline
-            </h3>
-            <span className="text-[10px] font-bold uppercase text-slate-400">Monthly Volume</span>
-          </div>
-
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyTimelineData}>
-                <XAxis dataKey="month" stroke="#888888" fontSize={11} tickLine={false} />
-                <YAxis stroke="#888888" fontSize={11} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
-                />
-                <Area type="monotone" dataKey="files" stroke="#F59E0B" fill="#F59E0B20" strokeWidth={2} name="Monthly Files" />
-              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Top Largest Files Table */}
+      {/* Row: Quarter x Category stacked + Duplicate gauge */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <Layers className="w-4 h-4 text-indigo-500" />
+              Category Mix per Quarter (Stacked)
+            </h3>
+            <span className="text-[10px] font-bold uppercase text-slate-400">{metric === 'count' ? 'Files by Category' : 'Size by Category'}</span>
+          </div>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={metric === 'count' ? stats.stackedCountData : stats.stackedData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" strokeOpacity={0.15} vertical={false} />
+                <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} />
+                <YAxis stroke="#888888" fontSize={11} tickLine={false} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                {ALL_CATEGORIES.map((c) => (
+                  <Bar key={c} dataKey={c} stackId="a" fill={CATEGORY_COLORS[c]} name={c} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <Percent className="w-4 h-4 text-amber-500" />
+              Duplicate Rate
+            </h3>
+            <span className="text-[10px] font-bold uppercase text-slate-400">Index Hygiene</span>
+          </div>
+          <div className="h-40 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadialBarChart innerRadius="70%" outerRadius="100%" data={dupData} startAngle={90} endAngle={-270}>
+                <RadialBar background dataKey="value" cornerRadius={10} fill={dupData[0].fill} />
+                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="font-mono" style={{ fill: '#f8fafc', fontSize: 22, fontWeight: 800 }}>
+                  {stats.duplicateRate.toFixed(1)}%
+                </text>
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+              </RadialBarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="text-center">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="font-bold text-amber-500">{stats.dupFiles.toLocaleString()}</span> duplicate copies
+            </p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              ~<span className="font-bold text-amber-500">{formatSize(stats.dupBytes)}</span> reclaimable
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Row: Monthly timeline + Top folders */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-amber-500" />
+              12-Month Ingestion Timeline
+            </h3>
+            <span className="text-[10px] font-bold uppercase text-slate-400">Monthly {metric === 'count' ? 'Volume' : 'Size (MB)'}</span>
+          </div>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={stats.monthlyTimelineData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" strokeOpacity={0.15} vertical={false} />
+                <XAxis dataKey="month" stroke="#888888" fontSize={11} tickLine={false} />
+                <YAxis stroke="#888888" fontSize={11} tickLine={false} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Area
+                  type="monotone"
+                  dataKey={metric === 'count' ? 'files' : 'sizeMB'}
+                  stroke="#F59E0B"
+                  fill="#F59E0B20"
+                  strokeWidth={2}
+                  name={metric === 'count' ? 'Monthly Files' : 'Size (MB)'}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <FolderTree className="w-4 h-4 text-purple-500" />
+              Top Folders by {metric === 'count' ? 'Files' : 'Storage'}
+            </h3>
+            <span className="text-[10px] font-bold uppercase text-slate-400">Top 6</span>
+          </div>
+          <div className="space-y-2.5">
+            {stats.folders.map((d, idx) => {
+              const max = stats.folders[0][metric];
+              const val = metric === 'count' ? d.count : d.sizeMB;
+              const pct = max > 0 ? (val / max) * 100 : 0;
+              return (
+                <div key={d.name} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-300 flex items-center gap-2 truncate">
+                      <span className="font-mono text-slate-500">#{idx + 1}</span>
+                      <span className="truncate">{d.name}</span>
+                    </span>
+                    <span className="font-mono text-slate-300 shrink-0">
+                      {metric === 'count' ? d.count.toLocaleString() : `${d.sizeMB.toFixed(1)} MB`}
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-400" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+            {stats.folders.length === 0 && (
+              <p className="text-xs text-slate-400 text-center py-6">No folders indexed yet.</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Key Insights */}
+      <div className="p-5 bg-gradient-to-r from-amber-500/[0.06] to-transparent rounded-2xl border border-amber-500/25 space-y-3">
+        <h3 className="font-extrabold text-sm text-amber-600 dark:text-amber-400 flex items-center gap-2">
+          <Lightbulb className="w-4 h-4" />
+          Key Insights
+        </h3>
+        <ul className="space-y-2">
+          {insights.map((insight, idx) => (
+            <li key={idx} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+              {insight}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Top Largest Files */}
       <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
         <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
           <HardDrive className="w-4 h-4 text-purple-500" />
@@ -210,10 +498,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
 
         <div className="space-y-2 text-xs">
           {largestFiles.map((f, idx) => (
-            <div
-              key={f.id}
-              className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between"
-            >
+            <div key={f.id} className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center space-x-3 truncate">
                 <span className="font-bold text-slate-400">#{idx + 1}</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200 truncate">{f.name}</span>
@@ -222,9 +507,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
                 <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
                   {f.classification.quarter}
                 </span>
-                <span className="font-bold text-slate-700 dark:text-slate-300">
-                  {(f.size / (1024 * 1024)).toFixed(1)} MB
-                </span>
+                <span className="font-bold text-slate-700 dark:text-slate-300">{(f.size / (1024 * 1024)).toFixed(1)} MB</span>
               </div>
             </div>
           ))}

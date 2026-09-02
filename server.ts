@@ -206,6 +206,82 @@ Every analysis must reference the actual numbers in the supplied metrics — nev
     }
   });
 
+  // AI Q&A Chat Endpoint — users ask questions about their scanned repository.
+  // Real Groq answers when GROQ_API_KEY is present; deterministic fallback otherwise.
+  app.post('/api/ai-chat', async (req, res) => {
+    try {
+      const { question, context, history } = req.body;
+
+      if (!question || typeof question !== 'string' || !question.trim()) {
+        return res.status(400).json({ error: 'Missing question payload' });
+      }
+
+      const ctx = context && typeof context === 'object' ? context : {};
+
+      if (groqApiKey) {
+        const serializedContext = JSON.stringify(ctx, null, 2).slice(0, 9000);
+        const historyLines = Array.isArray(history) && history.length > 0
+          ? history
+              .slice(-8)
+              .map((m: any) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${String(m.content ?? '').slice(0, 1500)}`)
+              .join('\n')
+          : '(no prior conversation)';
+
+        const prompt = `You are a helpful assistant for a scanned financial-quarter document repository ("QuarterSort AI"). Users ask questions about their scanned files and you give concise, actionable feedback.
+
+Repository summary metrics (JSON):
+${serializedContext}
+
+Recent conversation:
+${historyLines}
+
+Current user question: ${question}
+
+Reply in plain text (no markdown headers). Be concise (2-6 sentences unless a breakdown is asked for), reference real numbers from the metrics, and never invent data that contradicts them. If the question is unrelated to the repository, politely steer it back to what you can answer about the data.`;
+
+        const response = await fetch(GROQ_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${groqApiKey}`,
+          },
+          body: JSON.stringify({
+            model: GROQ_MODEL,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.5,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Groq API error ${response.status}: ${await response.text()}`);
+        }
+
+        const groqData = await response.json();
+        const content = groqData?.choices?.[0]?.message?.content;
+        if (!content) throw new Error('Empty Groq response');
+
+        return res.json({ success: true, answer: String(content).trim(), source: 'groq' });
+      }
+
+      // Deterministic fallback when GROQ_API_KEY absent
+      const totalFiles = Number(ctx.totalFiles) || 0;
+      const top = ctx.topDirectories && Array.isArray(ctx.topDirectories) ? ctx.topDirectories.slice(0, 4) : [];
+      const dupMB = Number(ctx.duplicateSavingsMB) || 0;
+      return res.json({
+        success: true,
+        answer: `I can answer questions about your scanned repository. Right now it holds ${totalFiles.toLocaleString()} files. ${
+          dupMB > 0
+            ? `I detected about ${dupMB >= 1024 ? (dupMB / 1024).toFixed(2) + ' GB' : dupMB.toFixed(1) + ' MB'} of reclaimable duplicate storage.`
+            : 'No duplicates were detected.'
+        }${top.length ? ` Top folders: ${top.join(', ')}.` : ''} Configure a GROQ_API_KEY to get fully generated AI answers; otherwise ask me about categories, quarters, duplicates, or storage for a rule-based response.`,
+        source: 'synthetic',
+      });
+    } catch (err: any) {
+      console.error('AI chat endpoint error:', err);
+      res.status(500).json({ error: 'Failed to generate AI answer', details: err.message });
+    }
+  });
+
   // Document Insights Endpoint
   app.post('/api/document-insights', async (req, res) => {
     try {

@@ -28,6 +28,7 @@ interface ConnectConfirmationModalProps {
   onAccept: () => void;
   onDecline: () => void;
   onLoadSample?: () => void;
+  onDetectFromPicker?: () => void;
 }
 
 export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> = ({
@@ -42,6 +43,7 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
   onAccept,
   onDecline,
   onLoadSample,
+  onDetectFromPicker,
 }) => {
   useEffect(() => {
     if (!isOpen) return;
@@ -118,6 +120,15 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
                 <p className="text-xs text-slate-400">
                   No drives detected — plug in your USB drive, then tap <span className="text-cyan-400 font-bold">Refresh</span>.
                 </p>
+                {onDetectFromPicker && (
+                  <button
+                    onClick={onDetectFromPicker}
+                    className="mt-3 inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-bold transition-colors"
+                  >
+                    <ScanLine className="w-3.5 h-3.5" />
+                    Detect USB drive from this device
+                  </button>
+                )}
               </div>
             ) : (
               <div className="p-2.5 space-y-1.5 max-h-48 overflow-y-auto">

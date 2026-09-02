@@ -21,6 +21,7 @@ import {
   Globe,
   Clock,
 } from 'lucide-react';
+import { AIChatPanel } from './AIChatPanel';
 
 interface AIInsightsViewProps {
   files: ScannedFile[];
@@ -241,14 +242,26 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
 
     const { summaryData } = computeMetrics();
 
+    let res: Response;
+    let data: any;
     try {
-      const res = await fetch('/api/well-findings', {
+      res = await fetch('/api/well-findings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ summaryData }),
       });
+      data = await res.json();
+    } catch (err: any) {
+      // Backend unreachable (e.g. static Vercel hosting). Run the full audit
+      // client-side so the loading + refresh flow still works consistently.
+      console.warn('AI audit endpoint unavailable, falling back to client-side report:', err);
+      await new Promise((r) => setTimeout(r, 900));
+      setReport(buildFindingsFallback(files.length, totalFolders, summaryData.duplicateSavingsMB));
+      setLoading(false);
+      return;
+    }
 
-      const data = await res.json();
+    try {
       if (data.success && data.report) {
         setReport({
           summary: data.report.summary,
@@ -653,6 +666,8 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
           </div>
         </div>
       )}
+
+      <AIChatPanel files={files} totalFolders={totalFolders} />
     </div>
   );
 };
