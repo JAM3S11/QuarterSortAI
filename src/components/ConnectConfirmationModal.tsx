@@ -20,6 +20,7 @@ interface ConnectConfirmationModalProps {
   isOpen: boolean;
   disks: PhysicalDisk[];
   selectedDiskId: string;
+  isRefreshing?: boolean;
   isMobile?: boolean;
   ocrEnabled?: boolean;
   onToggleOCR?: () => void;
@@ -35,6 +36,7 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
   isOpen,
   disks,
   selectedDiskId,
+  isRefreshing,
   isMobile,
   ocrEnabled,
   onToggleOCR,
@@ -106,21 +108,33 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
               </div>
               <button
                 onClick={onRefreshDisks}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-cyan-500/40 hover:bg-cyan-500/10 text-cyan-400 text-[10px] font-bold transition-colors shrink-0"
+                disabled={isRefreshing}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-cyan-500/40 hover:bg-cyan-500/10 text-cyan-400 text-[10px] font-bold transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Re-scan connected drives"
               >
-                <RefreshCw className="w-3 h-3" />
-                Refresh
+                <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Syncing…' : 'Refresh'}
               </button>
             </div>
 
             {disks.length === 0 ? (
               <div className="px-4 py-6 text-center">
-                <HardDrive className="w-5 h-5 mx-auto text-slate-600 mb-2" />
-                <p className="text-xs text-slate-400">
-                  No drives detected — plug in your USB drive, then tap <span className="text-cyan-400 font-bold">Refresh</span>.
-                </p>
-                {onDetectFromPicker && (
+                {isRefreshing ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 mx-auto text-cyan-400 mb-2 animate-spin" />
+                    <p className="text-xs text-slate-400">
+                      Syncing connected drives…
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <HardDrive className="w-5 h-5 mx-auto text-slate-600 mb-2" />
+                    <p className="text-xs text-slate-400">
+                      No drives detected — plug in your USB drive, then tap <span className="text-cyan-400 font-bold">Refresh</span>.
+                    </p>
+                  </>
+                )}
+                {onDetectFromPicker && !isRefreshing && (
                   <button
                     onClick={onDetectFromPicker}
                     className="mt-3 inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-bold transition-colors"
@@ -166,9 +180,15 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
                           <span className="text-[10px] font-mono text-slate-500 shrink-0">{disk.id}</span>
                         </div>
                         <p className="text-[10px] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-2">
-                          <span>{formatSize(disk.totalCapacityBytes)}</span>
-                          <span>·</span>
-                          <span>{formatSize(disk.freeBytes)} free</span>
+                          {disk.capacityEstimated ? (
+                            <span>Capacity unavailable</span>
+                          ) : (
+                            <>
+                              <span>{formatSize(disk.totalCapacityBytes)}</span>
+                              <span>·</span>
+                              <span>{formatSize(disk.freeBytes)} free</span>
+                            </>
+                          )}
                         </p>
                       </div>
                       {checked && <Check className="w-4 h-4 text-cyan-400 shrink-0" />}

@@ -65,50 +65,47 @@ export const USBOverview: React.FC<USBOverviewProps> = ({ volumeInfo, files, onR
       <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
         <div className="flex items-center justify-between text-xs font-bold">
           <span className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
-            Storage Capacity Distribution
-            {volumeInfo.capacityEstimated === true && (
-              <span title="Browsers can't read real drive size, so this is estimated from scanned content — confirm/select the drive in the connect flow to get real numbers."
-                className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                Estimated
-              </span>
-            )}
+            Storage Capacity
           </span>
-          <span className="font-mono text-emerald-600 dark:text-emerald-400">
-            {usedGB} GB Used / {freeGB} GB Free ({totalGB} GB Total)
-          </span>
+          {volumeInfo.capacityEstimated !== true && (
+            <span className="font-mono text-emerald-600 dark:text-emerald-400">
+              {usedGB} GB Used
+            </span>
+          )}
         </div>
 
-        {volumeInfo.capacityEstimated !== true && volumeInfo.name && (
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono flex items-center gap-2">
-            <span>{volumeInfo.name}</span>
-            {volumeInfo.filesystem && (
-              <>
-                <span>·</span>
-                <span>{volumeInfo.filesystem}</span>
-              </>
+        {volumeInfo.capacityEstimated === true ? (
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
+            Live storage capacity is unavailable for this connection. No capacity figures are shown —
+            only file and folder statistics are reported.
+          </p>
+        ) : (
+          <>
+            {volumeInfo.name && (
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono flex items-center gap-2">
+                <span>{volumeInfo.name}</span>
+                {volumeInfo.filesystem && (
+                  <>
+                    <span>·</span>
+                    <span>{volumeInfo.filesystem}</span>
+                  </>
+                )}
+              </p>
             )}
-          </p>
-        )}
 
-        <div className="w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
-          <div
-            className="h-full bg-emerald-500 transition-all duration-700"
-            style={{ width: `${percentUsed}%` }}
-          />
-        </div>
+            <div className="w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+              <div
+                className="h-full bg-emerald-500 transition-all duration-700"
+                style={{ width: `${percentUsed}%` }}
+              />
+            </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-500">
-          <span>0 GB</span>
-          <span>{percentUsed}% Occupied Space</span>
-          <span>{totalGB} GB</span>
-        </div>
-
-        {volumeInfo.capacityEstimated === true && (
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed">
-            "Used" is the actual scanned content size. Total/Free are estimated because browsers don't
-            expose the physical drive capacity — connect again and select the drive from the detection dialog
-            to use its real Total/Free.
-          </p>
+            <div className="flex items-center justify-between text-[11px] text-slate-500">
+              <span>0 GB</span>
+              <span>{percentUsed}% Occupied Space</span>
+              <span>{totalGB} GB</span>
+            </div>
+          </>
         )}
       </div>
 

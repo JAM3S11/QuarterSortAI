@@ -97,6 +97,7 @@ export async function measureDriveFromHandle(
     totalCapacityBytes: estimatedTotal,
     freeBytes: Math.max(0, estimatedTotal - usedBytes),
     driveType: 'removable',
+    capacityEstimated: true,
   };
 }
 

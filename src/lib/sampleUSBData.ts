@@ -13,6 +13,7 @@ export const SAMPLE_USB_INFO: USBVolumeInfo = {
   scanDurationMs: 1420,
   readSpeedMBps: 185.4,
   serialNumber: 'USB-SN-88294021-SECURE',
+  capacityEstimated: true,
 };
 
 // Generate deterministic rich realistic files across all 4 quarters

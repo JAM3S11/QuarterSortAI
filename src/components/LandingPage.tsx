@@ -33,7 +33,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500/20">
 
-      <header className="relative z-10 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-lg">
+      <header className="sticky top-0 z-10 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-lg shrink-0">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">

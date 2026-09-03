@@ -68,6 +68,7 @@ export default function App() {
   const [cyberMode, setCyberMode] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [ocrEnabled, setOcrEnabled] = useState<boolean>(false);
+  const [isRefreshingDisks, setIsRefreshingDisks] = useState<boolean>(false);
 
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     searchQuery: '',
@@ -99,7 +100,7 @@ export default function App() {
   }, []);
 
   const handleConnectUSB = () => {
-    fetchPhysicalDisks();
+    fetchPhysicalDisks(false);
     setShowConnectConfirm(true);
   };
 
@@ -126,21 +127,27 @@ export default function App() {
       result.files[0]?.relativePath.split('/')[0] ??
       result.files[0]?.folderPath?.split('/').filter(Boolean)[0] ??
       '';
-    let matchedDisk = matchPhysicalDisk(physicalDisks, rootName);
-
+    let matchedDisk: PhysicalDisk | null = null;
     let finalVolume = result.volumeInfo;
+
+    // 1. If the user explicitly chose a drive in the ConnectConfirmationModal
+    //    slot, always honour that choice — it carries real capacity data.
+    if (selectedDiskId) {
+      matchedDisk = physicalDisks.find((d) => d.id === selectedDiskId) ?? null;
+    }
+
+    // 2. Fallback: auto-match by scanned root folder name against drive labels.
+    if (!matchedDisk) {
+      matchedDisk = matchPhysicalDisk(physicalDisks, rootName);
+    }
+
     if (matchedDisk) {
       finalVolume = applyRealDriveInfo(result.volumeInfo, matchedDisk);
-    } else {
-      const preselected = selectedDiskId ? physicalDisks.find((d) => d.id === selectedDiskId) ?? null : null;
-      if (preselected) {
-        matchedDisk = preselected;
-        finalVolume = applyRealDriveInfo(result.volumeInfo, preselected);
-      } else if (physicalDisks.length > 0) {
-        setDriveConfirmRoot(rootName);
-        setDriveConfirmDisks(physicalDisks);
-        setIsDriveConfirmOpen(true);
-      }
+    } else if (physicalDisks.length > 0) {
+      // 3. Neither selection nor auto-match worked — ask the user.
+      setDriveConfirmRoot(rootName);
+      setDriveConfirmDisks(physicalDisks);
+      setIsDriveConfirmOpen(true);
     }
 
     if (matchedDisk) {
@@ -189,8 +196,29 @@ export default function App() {
         // slot reflects the real detected drive (letter/label) even when the
         // server-side /api/disk-stats endpoint isn't available (Vercel).
         // Reuses the handle already picked above — no second picker prompt.
+        //
+        // IMPORTANT: persistBrowserDetectedDrive overwrites selectedDiskId
+        // with the browser-detected disk (which has estimated capacity).
+        // Save the user's explicit selection first and restore it after, so
+        // applyScanResult picks the user-chosen drive (with real capacity)
+        // instead of the estimated one.
+        const preScanSelectedId = selectedDiskId;
         const disk = await measureDriveFromHandle(dirHandle, 400);
-        if (disk) persistBrowserDetectedDrive(disk);
+        if (disk) {
+          // Only persist the browser-detected (estimated) drive when the user
+          // hasn't already chosen a drive in the ConnectConfirmationModal.
+          // Otherwise persistBrowserDetectedDrive would REPLACE the real entry
+          // with an estimated one, even though selectedDiskId is restored.
+          if (!preScanSelectedId) {
+            persistBrowserDetectedDrive(disk);
+          }
+          // Always restore the user's explicit selection so applyScanResult
+          // uses the drive they chose (with real capacity), not the estimated one.
+          if (preScanSelectedId) {
+            setSelectedDiskId(preScanSelectedId);
+            localStorage.setItem(LAST_DRIVE_KEY, preScanSelectedId);
+          }
+        }
         const result = await scanUSBDirectoryHandle(dirHandle, reportProgress, { enableOCR: ocrEnabled });
         await applyScanResult(result);
         return;
@@ -262,27 +290,65 @@ export default function App() {
     localStorage.setItem(LAST_DRIVE_KEY, disk.id);
   };
 
-  const fetchPhysicalDisks = async () => {
+  const fetchPhysicalDisks = async (isRefreshRequest = false) => {
+    setIsRefreshingDisks(true);
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 10000);
-      const res = await fetch('/api/disk-stats', { signal: controller.signal });
-      clearTimeout(timer);
-      const data = await res.json();
-      if (data && Array.isArray(data.disks) && data.disks.length > 0) {
-        setPhysicalDisks(data.disks);
-        const remembered = localStorage.getItem(LAST_DRIVE_KEY);
-        if (remembered && data.disks.some((d) => d.id === remembered)) {
-          setSelectedDiskId(remembered);
+      let serverDisks: PhysicalDisk[] = [];
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch('/api/disk-stats', { signal: controller.signal });
+        clearTimeout(timer);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.disks)) serverDisks = data.disks;
+        } else {
+          console.warn('disk-stats non-ok status:', res.status);
         }
-        return;
+      } catch (err) {
+        // Static hosting (Vercel) has no /api/disk-stats server — this is expected.
+        console.warn('disk-stats unavailable:', err);
       }
-      // Server returned no drives (e.g. static Vercel hosting) — fall back to
-      // drives previously detected in-browser.
-      loadBrowserDetectedDrives();
+
+      // Merge real server-sourced drives with any previously browser-detected
+      // drives (from localStorage). Browser drives are estimates, so prefer the
+      // server entry when letters/ids coincide; otherwise keep both so the user
+      // can still pick a previously-detected USB.
+      const browserDrives = loadBrowserDetectedDrives();
+      const merged: PhysicalDisk[] = [...serverDisks];
+      const serverIds = new Set(serverDisks.map((d) => d.id));
+      for (const bd of browserDrives) {
+        if (!serverIds.has(bd.id)) merged.push(bd);
+      }
+
+      if (merged.length > 0) {
+        setPhysicalDisks(merged);
+      }
+
+      // On Vercel (no server, no cached drives) the drive list is empty — when
+      // the user explicitly hits Refresh, give them a way to detect a drive from
+      // the browser picker as a fallback. Never auto-prompt on initial open.
+      if (isRefreshRequest && serverDisks.length === 0 && merged.length === 0 && supportsDirectoryPicker()) {
+        try {
+          const picked = await pickAndMeasureDrive(200);
+          if (picked) {
+            persistBrowserDetectedDrive(picked.disk);
+            serverDisks.push(picked.disk);
+            setPhysicalDisks((prev) => (prev.length > 0 ? prev : [picked.disk]));
+          }
+        } catch (err) {
+          console.warn('Browser drive detect after refresh failed:', err);
+        }
+      }
+
+      const remembered = localStorage.getItem(LAST_DRIVE_KEY);
+      if (remembered && merged.length > 0 && merged.some((d) => d.id === remembered)) {
+        setSelectedDiskId(remembered);
+      }
     } catch (err) {
-      console.warn('disk-stats unavailable:', err);
-      loadBrowserDetectedDrives();
+      console.warn('refresh disks failed:', err);
+    } finally {
+      setIsRefreshingDisks(false);
     }
   };
 
@@ -310,7 +376,7 @@ export default function App() {
       totalCapacityBytes: disk.totalCapacityBytes,
       usedBytes,
       freeBytes: Math.max(0, disk.freeBytes),
-      capacityEstimated: false,
+      capacityEstimated: disk.capacityEstimated ?? false,
     };
   };
 
@@ -491,7 +557,8 @@ export default function App() {
         ocrEnabled={ocrEnabled}
         onToggleOCR={() => setOcrEnabled(!ocrEnabled)}
         onSelectDisk={handleSelectDisk}
-        onRefreshDisks={fetchPhysicalDisks}
+        onRefreshDisks={() => fetchPhysicalDisks(true)}
+        isRefreshing={isRefreshingDisks}
         onAccept={handleConnectAccept}
         onDecline={() => setShowConnectConfirm(false)}
         onLoadSample={handleLoadSampleUSB}

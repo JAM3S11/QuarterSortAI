@@ -122,6 +122,8 @@ export interface PhysicalDisk {
   totalCapacityBytes: number;
   freeBytes: number;
   driveType: 'removable' | 'fixed';
+  /** true when capacity is estimated from the browser (no real server data) */
+  capacityEstimated?: boolean;
 }
 
 export interface QuarterSummary {

@@ -21,7 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const usedGB = volumeInfo ? (volumeInfo.usedBytes / (1024 * 1024 * 1024)).toFixed(1) : '0';
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md px-4 lg:px-6 py-3 transition-colors">
+    <header className="z-30 w-full border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md px-4 lg:px-6 py-3 transition-colors shrink-0">
       <div className="flex items-center justify-between gap-3">
         {/* Left: Menu (mobile) + Brand */}
         <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
@@ -61,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right: USB storage (used) + Connect USB link */}
         <div className="flex items-center space-x-3 sm:space-x-4">
-          {volumeInfo && (
+          {volumeInfo && volumeInfo.capacityEstimated !== true && (
             <div
               title={`${volumeInfo.name} — storage used so far`}
               className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300"

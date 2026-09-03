@@ -94,19 +94,23 @@ export const DriveConfirmModal: React.FC<DriveConfirmModalProps> = ({
                       </span>
                       <span className="text-[10px] font-mono text-slate-500">{disk.id}</span>
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-2">
-                      <span>{formatSize(disk.totalCapacityBytes)}</span>
-                      <span>·</span>
-                      <span>{formatSize(disk.totalCapacityBytes - disk.freeBytes)} used</span>
-                      <span>·</span>
-                      <span>{formatSize(disk.freeBytes)} free</span>
-                      {disk.filesystem && (
-                        <>
-                          <span>·</span>
-                          <span>{disk.filesystem}</span>
-                        </>
-                      )}
-                    </p>
+                    {disk.capacityEstimated ? (
+                      <p className="text-[10px] text-slate-500 mt-0.5">Capacity unavailable</p>
+                    ) : (
+                      <p className="text-[10px] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-2">
+                        <span>{formatSize(disk.totalCapacityBytes)}</span>
+                        <span>·</span>
+                        <span>{formatSize(disk.totalCapacityBytes - disk.freeBytes)} used</span>
+                        <span>·</span>
+                        <span>{formatSize(disk.freeBytes)} free</span>
+                        {disk.filesystem && (
+                          <>
+                            <span>·</span>
+                            <span>{disk.filesystem}</span>
+                          </>
+                        )}
+                      </p>
+                    )}
                   </div>
                   {checked && <Check className="w-4 h-4 text-cyan-400 shrink-0" />}
                 </button>
