@@ -188,7 +188,7 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
   const closeContextMenu = () => setContextMenu(null);
 
   return (
-    <div className="space-y-4" onClick={closeContextMenu}>
+    <div className="flex-1 min-h-0 flex flex-col space-y-4 overflow-hidden" onClick={closeContextMenu}>
       {/* Top Controls: Breadcrumb & View Options */}
       <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm">
         {/* Breadcrumb Navigation */}
@@ -280,6 +280,8 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
         </div>
       </div>
 
+      {/* Only the folders + files region scrolls; the breadcrumb/sort controls stay fixed. */}
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden thin-scrollbar overscroll-contain pr-1 space-y-4">
       {/* Folders Section (Alphabetical Subfolders) */}
       {currentSubfolders.length > 0 && (
         <div>
@@ -291,7 +293,7 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
               <button
                 key={folder.id}
                 onClick={() => onNavigateFolder(folder.path)}
-                className="group p-3.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-2xl border border-slate-200 dark:border-slate-800 text-left transition-all duration-200 hover:shadow-md flex flex-col justify-between"
+                className="group p-3.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-left transition-all duration-200 hover:shadow-md flex flex-col justify-between"
               >
                 <div className="flex items-center space-x-3 mb-2">
                   <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 group-hover:scale-105 transition-transform">
@@ -354,7 +356,7 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
                   onClick={() => setSelectedFileId(file.id)}
                   onDoubleClick={() => onPreviewFile(file)}
                   onContextMenu={(e) => handleContextMenu(e, file)}
-                  className={`group relative p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 ${
+                  className={`group relative p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/40 ${
                     isSelected
                       ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md'
                       : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
@@ -429,9 +431,9 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
                     onClick={() => setSelectedFileId(file.id)}
                     onDoubleClick={() => onPreviewFile(file)}
                     onContextMenu={(e) => handleContextMenu(e, file)}
-                    className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${
-                      selectedFileId === file.id ? 'bg-emerald-500/5' : ''
-                    }`}
+className={`transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 ${
+                    selectedFileId === file.id ? 'bg-emerald-500/5' : ''
+                  }`}
                   >
                     <td className="py-2.5 px-4 font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2.5">
                       {getCategoryIcon(file.category)}
@@ -504,6 +506,7 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
             ))}
           </div>
         )}
+        </div>
       </div>
 
       {/* Right-Click Context Menu */}

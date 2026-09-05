@@ -505,9 +505,9 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex-1 min-h-0 flex flex-col space-y-4 overflow-hidden">
       {/* Top Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 shrink-0">
         <div>
           <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-emerald-500" />
@@ -520,7 +520,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
       </div>
 
       {/* View Mode Toolbar */}
-      <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-sm">
+      <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-sm shrink-0">
         {/* Extension Filters */}
         <div className="flex flex-col gap-1.5 min-w-0">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -580,6 +580,8 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
         </div>
       </div>
 
+      {/* Only the gallery views scroll; the header and toolbar stay fixed. */}
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden thin-scrollbar overscroll-contain pr-1 space-y-4">
       {/* Empty State */}
       {displayFiles.length === 0 ? (
         <div className="p-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -619,6 +621,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
           {renderActiveView()}
         </>
       )}
+      </div>
 
       {/* Fullscreen Photo Lightbox Modal */}
       {selectedFile && (

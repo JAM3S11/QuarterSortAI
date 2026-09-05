@@ -99,7 +99,38 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // Drop the previous scan's view state so a new round starts clean.
+  const resetScanViewState = () => {
+    setScannedFiles([]);
+    setVolumeInfo(null);
+    setCurrentFolderPath('/');
+    setFilterOptions({
+      searchQuery: '',
+      selectedQuarter: 'ALL',
+      selectedMonth: 'ALL',
+      selectedCategory: 'ALL',
+      dateFilterType: 'ALL',
+      onlyDuplicates: false,
+      onlyNeedsReview: false,
+      sortBy: 'name',
+      sortOrder: 'asc',
+      viewMode: 'grid',
+    });
+    clearScannedIndexFromDB();
+  };
+
   const handleConnectUSB = () => {
+    beginFreshScanRound();
+  };
+
+  // Start a brand-new scan round. Every connection path goes through here so
+  // the drive slot only ever shows drives detected in THIS round — no cached
+  // browser-drive entries and no remembered selection carried over from a
+  // previous session (both are cleared synchronously before the disk fetch,
+  // which prevents stale drives from being reloaded on production/Vercel).
+  const beginFreshScanRound = () => {
+    resetScanViewState();
+    clearCachedDriveState();
     fetchPhysicalDisks(false);
     setShowConnectConfirm(true);
   };
@@ -114,7 +145,7 @@ export default function App() {
 
   const handleReplaceConfirm = () => {
     setShowReplaceConfirm(false);
-    handleConnectUSB();
+    beginFreshScanRound();
   };
 
   const handleConnectAccept = () => {
@@ -290,6 +321,25 @@ export default function App() {
     localStorage.setItem(LAST_DRIVE_KEY, disk.id);
   };
 
+  // On static hosting (Vercel) browser-detected drives are stored in localStorage
+  // and never pruned, so they linger across sessions and can be wrongly matched
+  // to a freshly scanned drive (attaching a stale estimated capacity). Each fresh
+  // round clears ALL cached/estimated drive entries and the remembered selection.
+  // This is synchronous on purpose: it must land in localStorage BEFORE the
+  // disk fetch reads it, otherwise the stale list reloads immediately (the old
+  // version wrote localStorage inside a React setState updater, which runs after
+  // render — too late, so stale drives survived every refresh).
+  const clearCachedDriveState = () => {
+    try {
+      localStorage.removeItem(BROWSER_DRIVES_KEY);
+      localStorage.removeItem(LAST_DRIVE_KEY);
+    } catch (err) {
+      console.warn('clear cached drive state failed:', err);
+    }
+    setSelectedDiskId('');
+    setPhysicalDisks([]);
+  };
+
   const fetchPhysicalDisks = async (isRefreshRequest = false) => {
     setIsRefreshingDisks(true);
     try {
@@ -320,6 +370,14 @@ export default function App() {
       for (const bd of browserDrives) {
         if (!serverIds.has(bd.id)) merged.push(bd);
       }
+
+      // Prefer removable/USB drives so the freshly connected drive is the first
+      // thing the user sees in the slot.
+      merged.sort((a, b) => {
+        const ra = a.driveType === 'removable' ? 0 : 1;
+        const rb = b.driveType === 'removable' ? 0 : 1;
+        return ra - rb;
+      });
 
       if (merged.length > 0) {
         setPhysicalDisks(merged);
@@ -489,7 +547,7 @@ export default function App() {
           />
         </aside>
 
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto hide-scrollbar max-w-7xl mx-auto w-full space-y-6">
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto hide-scrollbar max-w-7xl mx-auto w-full space-y-6 flex flex-col">
           {activeTab === 'dashboard' && (
             <QuarterCards
               files={scannedFiles}
@@ -499,13 +557,15 @@ export default function App() {
           )}
 
           {activeTab === 'explorer' && (
-            <div className="space-y-4">
+            <div className="flex flex-col flex-1 min-h-0 gap-4">
+              <div className="shrink-0">
               <FilterPanel
                 filterOptions={filterOptions}
                 onChangeFilterOptions={setFilterOptions}
                 onResetFilters={resetFilters}
                 totalResults={scannedFiles.length}
               />
+              </div>
               <FolderExplorer
                 files={scannedFiles}
                 currentFolderPath={currentFolderPath}
@@ -524,7 +584,7 @@ export default function App() {
           )}
 
           {activeTab === 'usb_overview' && (
-            <USBOverview volumeInfo={volumeInfo} files={scannedFiles} onRescan={handleConnectUSB} />
+            <USBOverview volumeInfo={volumeInfo} files={scannedFiles} onRescan={beginFreshScanRound} />
           )}
 
           {activeTab === 'analytics' && <AnalyticsView files={scannedFiles} />}
