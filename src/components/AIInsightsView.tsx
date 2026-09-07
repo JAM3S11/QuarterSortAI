@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScannedFile, WellFindingsReport, ConnectedDevice } from '../types';
 import { buildConnectedDevices } from '../lib/deviceInfo';
+import { loadLastAIAuditReport, saveLastAIAuditReport } from '../lib/aiInsightsStorage';
 import {
   BrainCircuit,
   RefreshCw,
@@ -114,12 +115,24 @@ const accentTile = (score: number) =>
         : 'from-red-500/15 to-red-500/0 text-red-600 dark:text-red-400';
 
 export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFolders }) => {
-  const [report, setReport] = useState<WellFindingsReport | null>(null);
+  const [report, setReport] = useState<WellFindingsReport | null>(() => loadLastAIAuditReport());
+  const [fromCache, setFromCache] = useState<boolean>(() => loadLastAIAuditReport() !== null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [devices, setDevices] = useState<ConnectedDevice[]>([]);
 
   const defaultModel = report?.model || 'openai/gpt-oss-120b';
+
+  // When a cached audit report loads on mount, keep it on screen instead of
+  // immediately fetching a fresh one; a subsequent scan (files.length change)
+  // or a manual "Re-run" still generates a new report.
+  const skipInitialFetch = useRef(fromCache);
+
+  const finalizeReport = (next: WellFindingsReport | null) => {
+    setReport(next);
+    setFromCache(false);
+    saveLastAIAuditReport(next);
+  };
 
   const computeMetrics = () => {
     const qBreakdown: Record<string, number> = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
@@ -256,14 +269,14 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
       // client-side so the loading + refresh flow still works consistently.
       console.warn('AI audit endpoint unavailable, falling back to client-side report:', err);
       await new Promise((r) => setTimeout(r, 900));
-      setReport(buildFindingsFallback(files.length, totalFolders, summaryData.duplicateSavingsMB));
+      finalizeReport(buildFindingsFallback(files.length, totalFolders, summaryData.duplicateSavingsMB));
       setLoading(false);
       return;
     }
 
     try {
       if (data.success && data.report) {
-        setReport({
+        finalizeReport({
           summary: data.report.summary,
           score: data.report.score ?? 0,
           grade: data.report.grade || 'N/A',
@@ -293,7 +306,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
       }
     } catch (err: any) {
       console.warn('AI audit fallback:', err);
-      setReport(buildFindingsFallback(files.length, totalFolders, summaryData.duplicateSavingsMB));
+      finalizeReport(buildFindingsFallback(files.length, totalFolders, summaryData.duplicateSavingsMB));
     } finally {
       setLoading(false);
     }
@@ -301,6 +314,10 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
 
   useEffect(() => {
     setDevices(buildConnectedDevices());
+    if (skipInitialFetch.current) {
+      skipInitialFetch.current = false;
+      return;
+    }
     fetchWellFindings();
   }, [files.length]);
 
@@ -314,14 +331,27 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
             <BrainCircuit className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="font-display text-[1.35rem] leading-tight font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h2 className="font-display text-[1.35rem] leading-tight font-extrabold text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-2">
               Groq AI Audit Report
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                Server-Side Groq · {defaultModel}
+              <span
+                title={`Model: ${defaultModel}`}
+                className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 min-w-0"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+                <span className="sm:hidden">AI</span>
+                <span className="hidden sm:inline max-w-[14rem] md:max-w-[20rem] truncate">
+                  Server-Side Groq · {defaultModel}
+                </span>
               </span>
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
               Refined deep-dive repository audit — integrity scoring, dimensional analysis, findings, and prioritized actions
+              {fromCache && (
+                <span className="inline-flex items-center gap-1 text-[0.65rem] font-semibold px-1.5 py-0.5 rounded-full bg-slate-500/10 text-slate-500 dark:text-slate-400 border border-slate-500/20">
+                  <Clock className="w-2.5 h-2.5" />
+                  Cached from last session
+                </span>
+              )}
             </p>
           </div>
         </div>

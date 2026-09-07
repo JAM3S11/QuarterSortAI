@@ -49,9 +49,9 @@ export const DuplicateCenter: React.FC<DuplicateCenterProps> = ({ files, onPrevi
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full">
       {/* Top Banner */}
-      <div className="p-5 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent rounded-2xl border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="shrink-0 p-5 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent rounded-2xl border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center space-x-3 min-w-0">
           <div className="p-3 rounded-xl bg-amber-500 text-slate-950 font-bold shrink-0">
             <Copy className="w-6 h-6" />
@@ -79,6 +79,7 @@ export const DuplicateCenter: React.FC<DuplicateCenterProps> = ({ files, onPrevi
         </div>
       </div>
 
+      <div className="flex-1 min-h-0 mt-6 overflow-y-auto overscroll-contain thin-scrollbar space-y-6">
       {duplicateGroups.length === 0 ? (
         <div className="p-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
           <ShieldCheck className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
@@ -95,7 +96,7 @@ export const DuplicateCenter: React.FC<DuplicateCenterProps> = ({ files, onPrevi
               Duplicate Clusters ({duplicateGroups.length})
             </h3>
 
-            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[600px] overflow-y-auto overscroll-contain thin-scrollbar pr-1">
               {duplicateGroups.map((group) => {
                 const isSelected = activeGroup?.hash === group.hash;
 
@@ -198,6 +199,7 @@ export const DuplicateCenter: React.FC<DuplicateCenterProps> = ({ files, onPrevi
           )}
         </div>
       )}
+      </div>
     </div>
   );
 };

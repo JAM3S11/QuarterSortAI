@@ -21,6 +21,7 @@ import { SAMPLE_FILES, SAMPLE_USB_INFO } from './lib/sampleUSBData';
 import { scanFileList, scanUSBDirectoryHandle } from './lib/scannerEngine';
 import { matchPhysicalDisk } from './lib/diskMatch';
 import { saveScannedIndexToDB, clearScannedIndexFromDB } from './lib/indexedDB';
+import { clearLastAIAuditReport } from './lib/aiInsightsStorage';
 import { detectFilePickerCapability } from './lib/deviceInfo';
 import { pickAndMeasureDrive, measureDriveFromHandle, supportsDirectoryPicker } from './lib/browserDrives';
 
@@ -117,6 +118,7 @@ export default function App() {
       viewMode: 'grid',
     });
     clearScannedIndexFromDB();
+    clearLastAIAuditReport();
   };
 
   const handleConnectUSB = () => {
