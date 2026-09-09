@@ -101,38 +101,29 @@ body {
   }
 }
 
-.thin-scrollbar::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-.thin-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.4);
-  border-radius: 9999px;
-}
-
-.thin-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.65);
-}
-
-.thin-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+.thin-scrollbar::-webkit-scrollbar,
 .thin-scrollbar-x::-webkit-scrollbar {
-  height: 5px;
   width: 5px;
+  height: 5px;
 }
 
+.thin-scrollbar::-webkit-scrollbar-thumb,
 .thin-scrollbar-x::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.4);
+  background: transparent;
   border-radius: 9999px;
 }
 
-.thin-scrollbar-x::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.65);
+.thin-scrollbar:hover::-webkit-scrollbar-thumb,
+.thin-scrollbar-x:hover::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.45);
 }
 
+.thin-scrollbar::-webkit-scrollbar-thumb:hover,
+.thin-scrollbar-x::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.75);
+}
+
+.thin-scrollbar::-webkit-scrollbar-track,
 .thin-scrollbar-x::-webkit-scrollbar-track {
   background: transparent;
 }
@@ -140,6 +131,11 @@ body {
 .thin-scrollbar-x,
 .thin-scrollbar {
   scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.thin-scrollbar-x:hover,
+.thin-scrollbar:hover {
   scrollbar-color: rgba(16, 185, 129, 0.5) transparent;
 }
 
@@ -150,4 +146,38 @@ body {
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Amber-tinted scrollbar for the AI Audit report panel — matches the
+   amber/emerald accent theme in both light and dark mode. Hidden by default,
+   appears gently on hover. */
+.amber-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.amber-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.amber-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.45);
+}
+
+.amber-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.75);
+}
+
+.amber-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.amber-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.amber-scrollbar:hover {
+  scrollbar-color: rgba(245, 158, 11, 0.5) transparent;
 }

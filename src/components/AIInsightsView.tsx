@@ -46,10 +46,10 @@ const scoreColor = (score: number) =>
 
 const statusStyles = (status: string) =>
   status === 'pass'
-    ? { box: 'bg-emerald-500/5 border-emerald-500/30', badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' }
+    ? { box: 'bg-emerald-500/5 border-emerald-500/30', badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30', bar: 'bg-emerald-500 to-lime-400' }
     : status === 'warning'
-      ? { box: 'bg-amber-500/5 border-amber-500/30', badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30' }
-      : { box: 'bg-red-500/5 border-red-500/30', badge: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30' };
+      ? { box: 'bg-amber-500/5 border-amber-500/30', badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30', bar: 'bg-amber-500 to-orange-400' }
+      : { box: 'bg-red-500/5 border-red-500/30', badge: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30', bar: 'bg-red-500 to-rose-400' };
 
 const deviceIconByType: Record<string, React.ReactNode> = {
   phone: <Smartphone className="w-5 h-5" />,
@@ -105,15 +105,6 @@ function osBadgeClass(os: string): string {
   }
 }
 
-const accentTile = (score: number) =>
-  score >= 90
-    ? 'from-emerald-500/15 to-emerald-500/0 text-emerald-600 dark:text-emerald-400'
-    : score >= 75
-      ? 'from-lime-500/15 to-lime-500/0 text-lime-600 dark:text-lime-400'
-      : score >= 60
-        ? 'from-amber-500/15 to-amber-500/0 text-amber-600 dark:text-amber-400'
-        : 'from-red-500/15 to-red-500/0 text-red-600 dark:text-red-400';
-
 export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFolders }) => {
   const [report, setReport] = useState<WellFindingsReport | null>(() => loadLastAIAuditReport());
   const [fromCache, setFromCache] = useState<boolean>(() => loadLastAIAuditReport() !== null);
@@ -122,6 +113,16 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
   const [devices, setDevices] = useState<ConnectedDevice[]>([]);
 
   const defaultModel = report?.model || 'openai/gpt-oss-120b';
+
+  const compliancePct = report
+    ? (() => { const n = parseFloat(String(report.complianceRating)); return isFinite(n) ? Math.round(n) : 0; })()
+    : 0;
+  const complianceTag = report
+    ? (String(report.complianceRating).replace(/^\s*\d+(\.\d+)?\s*%?\s*/i, '').trim() || 'Compliant')
+    : 'Compliant';
+  const riskWord = report
+    ? (report.riskAssessment.split(/[—\-–]/)[0].trim().toLowerCase() || 'medium')
+    : 'medium';
 
   // When a cached audit report loads on mount, keep it on screen instead of
   // immediately fetching a fresh one; a subsequent scan (files.length change)
@@ -322,15 +323,16 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
   }, [files.length]);
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden amber-scrollbar space-y-6 pb-4">
       <style>{`@keyframes progress-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } } .animate-progress { animation: progress-slide 1.4s ease-in-out infinite; }`}</style>
-      {/* Top Banner */}
-      <div className="p-6 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent rounded-2xl border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center space-x-4">
-          <div className="p-3.5 rounded-2xl bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20">
+      {/* Top Banner — pinned above the whole AI Insights view, including the
+          chat panel, on every breakpoint */}
+      <div className="sticky top-0 z-40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-slate-100/85 dark:to-slate-950/85 rounded-2xl border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-xl bg-slate-100/85 dark:bg-slate-950/85 p-5">
+        <div className="flex items-center space-x-4 min-w-0">
+          <div className="p-3.5 rounded-2xl bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 shrink-0">
             <BrainCircuit className="w-8 h-8" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="font-display text-[1.35rem] leading-tight font-extrabold text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-2">
               Groq AI Audit Report
               <span
@@ -421,6 +423,8 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
         </div>
       )}
 
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_24rem] gap-6 items-start">
+        <div className="space-y-6 min-w-0">
       {report && (
         <div className="relative space-y-6">
           {/* Running overlay shown only while re-running an existing report */}
@@ -443,80 +447,77 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
 
           <div className={`space-y-6 transition-opacity duration-300 ${loading ? 'opacity-40 pointer-events-none select-none' : ''}`}>
           {/* Score & Ratings Header */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 items-stretch">
             {/* Integrity Score */}
-            <div className="relative overflow-hidden p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-emerald-500/[0.07] to-transparent hover:shadow-md hover:border-emerald-500/30 transition-all">
-              <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${report.score >= 75 ? 'from-emerald-500 to-lime-400' : report.score >= 60 ? 'from-amber-500 to-orange-400' : 'from-red-500 to-rose-400'}`} />
-              <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl bg-gradient-to-br ${accentTile(report.score)}`}>
-                  <Gauge className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="title-caps text-slate-500 dark:text-slate-400 block leading-tight">Integrity</span>
-                  <span className="title-caps text-slate-500 dark:text-slate-400 block leading-tight">Score</span>
-                  <div className="flex items-baseline gap-0.5 mt-0.5">
-                    <span className={`data-mono font-black text-3xl ${scoreColor(report.score)}`}>{report.score}</span>
-                    <span className="text-xs font-bold text-slate-400">/100</span>
-                  </div>
-                </div>
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div className="flex items-start justify-between">
+                <span className="pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Integrity Score</span>
+                <span className={`p-2 rounded-xl ${report.score >= 75 ? 'bg-emerald-500/10 text-emerald-500' : report.score >= 60 ? 'bg-amber-500/10 text-amber-500' : 'bg-red-500/10 text-red-500'}`}>
+                  <Gauge className="w-4 h-4" />
+                </span>
               </div>
-              <div className="mt-3 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                <div
-                  className={`h-full rounded-full bg-gradient-to-r ${report.score >= 75 ? 'from-emerald-500 to-lime-400' : report.score >= 60 ? 'from-amber-500 to-orange-400' : 'from-red-500 to-rose-400'}`}
-                  style={{ width: `${Math.min(100, report.score)}%` }}
-                />
+              <div className="mt-3 flex items-baseline gap-1.5">
+                <span className={`data-mono text-3xl font-bold tracking-tight leading-none ${scoreColor(report.score)}`}>{report.score}</span>
+                <span className="text-sm font-semibold text-slate-400">/ 100</span>
+              </div>
+              <div className="mt-auto pt-3">
+                <div className="h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${report.score >= 75 ? 'bg-emerald-500' : report.score >= 60 ? 'bg-amber-500' : 'bg-red-500'}`}
+                    style={{ width: `${Math.min(100, report.score)}%` }}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Grade */}
-            <div className="relative overflow-hidden p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-amber-500/[0.07] to-transparent hover:shadow-md hover:border-amber-500/30 transition-all">
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 to-orange-400" />
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/0 text-amber-600 dark:text-amber-400">
-                  <Award className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="title-caps text-slate-500 dark:text-slate-400 block">Audit</span>
-                  <span className="title-caps text-slate-500 dark:text-slate-400 block">Grade</span>
-                  <div className="relative inline-flex items-center justify-center w-9 h-9 rounded-2xl bg-amber-500 text-slate-950 font-black text-xl shadow-md shadow-amber-500/25 mt-0.5">
-                    {report.grade}
-                  </div>
-                </div>
+            {/* Audit Grade */}
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div className="flex items-start justify-between">
+                <span className="pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Audit Grade</span>
+                <span className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+                  <Award className="w-4 h-4" />
+                </span>
               </div>
+              <div className="mt-3 flex-1 flex items-center">
+                <span className="data-mono text-3xl font-bold tracking-tight leading-none text-amber-600 dark:text-amber-400">{report.grade}</span>
+              </div>
+              <p className="mt-auto pt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">A+ – F scale</p>
             </div>
 
             {/* Compliance */}
-            <div className="relative overflow-hidden p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-sky-500/[0.07] to-transparent hover:shadow-md hover:border-sky-500/30 transition-all">
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 to-cyan-400" />
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-sky-500/15 to-sky-500/0 text-sky-600 dark:text-sky-400 shrink-0">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="title-caps text-slate-500 dark:text-slate-400 block">Compliance</span>
-                  <span className="title-caps text-slate-500 dark:text-slate-400 block">Rating</span>
-                  <span className="text-sm font-black text-slate-800 dark:text-slate-100 block mt-1 truncate" title={report.complianceRating}>
-                    {report.complianceRating}
-                  </span>
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div className="flex items-start justify-between">
+                <span className="pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Compliance Rating</span>
+                <span className="p-2 rounded-xl bg-sky-500/10 text-sky-500">
+                  <ShieldCheck className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="mt-3 flex items-baseline gap-1.5">
+                <span className="data-mono text-3xl font-bold tracking-tight leading-none text-sky-600 dark:text-sky-400">{compliancePct}%</span>
+                <span className="text-sm font-semibold text-slate-400">{complianceTag}</span>
+              </div>
+              <div className="mt-auto pt-3">
+                <div className="h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-sky-500"
+                    style={{ width: `${Math.min(100, compliancePct)}%` }}
+                  />
                 </div>
               </div>
             </div>
 
             {/* Risk */}
-            <div className="relative overflow-hidden p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-red-500/[0.06] to-transparent hover:shadow-md hover:border-red-500/30 transition-all">
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-500 to-rose-400" />
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-red-500/15 to-red-500/0 text-red-600 dark:text-red-400 shrink-0">
-                  <AlertTriangle className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="title-caps text-slate-500 dark:text-slate-400 block">Risk</span>
-                  <span className="title-caps text-slate-500 dark:text-slate-400 block">Level</span>
-                  <span className="text-sm font-black text-red-600 dark:text-red-400 block mt-1 truncate" title={report.riskAssessment}>
-                    {report.riskAssessment.split(/[—\-–]/)[0].trim()}
-                  </span>
-                </div>
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div className="flex items-start justify-between">
+                <span className="pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Risk Level</span>
+                <span className="p-2 rounded-xl bg-red-500/10 text-red-500">
+                  <AlertTriangle className="w-4 h-4" />
+                </span>
               </div>
+              <div className="mt-3 flex-1 flex items-center">
+                <span className="data-mono text-3xl font-bold tracking-tight leading-none text-red-600 dark:text-red-400 capitalize">{riskWord}</span>
+              </div>
+              <p className="mt-auto pt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Low · Medium · High</p>
             </div>
           </div>
 
@@ -550,7 +551,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
               session is detected from this browser in real time.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {devices.map((d) => (
                 <div
                   key={d.id}
@@ -612,12 +613,13 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
               <FlaskConical className="w-4 h-4 text-amber-500" />
               Dimensional Deep-Dive Analysis
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
               {report.sections.map((s) => {
                 const styles = statusStyles(s.status);
                 return (
-                  <div key={s.key} className={`p-4 rounded-2xl border ${styles.box}`}>
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={s.key} className={`relative overflow-hidden p-5 rounded-2xl border ${styles.box} flex flex-col`}>
+                    <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${styles.bar}`} />
+                    <div className="flex items-center justify-between mb-2.5">
                       <span className="flex items-center gap-2 font-extrabold text-xs text-slate-800 dark:text-slate-200">
                         {SECTION_ICONS[s.key] || <Info className="w-4 h-4" />}
                         {s.title}
@@ -626,15 +628,15 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
                         {s.status}
                       </span>
                     </div>
-                    <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1.5">{s.metric}</p>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">{s.summary}</p>
+                    <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-2 leading-snug">{s.metric}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed flex-1">{s.summary}</p>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             {/* Findings */}
             <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
               <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -696,8 +698,15 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
           </div>
         </div>
       )}
+        </div>
 
-      <AIChatPanel files={files} totalFolders={totalFolders} />
+        {/* Ask the AI — kept as a sticky sidebar so it stays in view below the pinned
+            banner, without scrolling to the bottom of the audit report (stacks below
+            on mobile/tablet). */}
+        <div className="lg:sticky lg:top-[118px] min-w-0">
+          <AIChatPanel files={files} totalFolders={totalFolders} />
+        </div>
+      </div>
     </div>
   );
 };
