@@ -156,7 +156,7 @@ const Thumb: React.FC<{
       className={`bg-gradient-to-br from-slate-800 to-slate-950 flex flex-col items-center justify-center p-2 text-center overflow-hidden ${className}`}
     >
       <ImageIcon className={`${iconClass} text-emerald-400/80 mb-1`} />
-      <span className="text-[9px] font-bold text-slate-200 truncate w-full px-1">{file.name}</span>
+      <span className="text-[0.5625rem] font-bold text-slate-200 truncate w-full px-1">{file.name}</span>
     </div>
   );
 };
@@ -231,7 +231,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
     setRotation(0);
   };
 
-  const quarterBadge = (file: ScannedFile, size: string = 'text-[9px] px-1.5 py-0.5') => (
+  const quarterBadge = (file: ScannedFile, size: string = 'text-[0.5625rem] px-1.5 py-0.5') => (
     <span className={`inline-block font-mono font-bold rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 ${size}`}>
       {file.classification.quarter}
     </span>
@@ -253,8 +253,8 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
             </span>
             {showMeta && (
               <div className="flex items-center justify-between mt-1">
-                <span className="text-[9px] text-slate-400 font-mono uppercase">{file.extension}</span>
-                <span className="text-[9px] text-slate-400 font-mono">{formatSize(file.size)}</span>
+                <span className="text-[0.5625rem] text-slate-400 font-mono uppercase">{file.extension}</span>
+                <span className="text-[0.5625rem] text-slate-400 font-mono">{formatSize(file.size)}</span>
               </div>
             )}
           </div>
@@ -303,7 +303,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
                 {file.name}
               </span>
-              <span className="text-[10px] font-mono text-slate-400 shrink-0">{formatSize(file.size)}</span>
+              <span className="text-[0.625rem] font-mono text-slate-400 shrink-0">{formatSize(file.size)}</span>
             </div>
           </button>
         ))}
@@ -316,7 +316,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto shadow-sm">
       <table className="w-full min-w-[860px] text-left border-collapse text-xs">
         <thead>
-          <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-slate-400 font-semibold uppercase text-[10px] tracking-wider">
+          <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-slate-400 font-semibold uppercase text-[0.625rem] tracking-wider">
             <th className="py-3 px-4">Name</th>
             <th className="py-3 px-3">Type</th>
             <th className="py-3 px-3">Quarter</th>
@@ -346,7 +346,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
                 </div>
               </td>
               <td className="py-2 px-3">
-                <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase">
+                <span className="font-mono text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase">
                   {file.extension}
                 </span>
               </td>
@@ -359,7 +359,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
               </td>
               <td className="py-2 px-3 font-mono text-slate-500">{formatSize(file.size)}</td>
               <td className="py-2 px-3 text-slate-400">{formatDate(file.modifiedDate)}</td>
-              <td className="py-2 px-4 font-mono text-[10px] text-slate-400 truncate max-w-[180px]">
+              <td className="py-2 px-4 font-mono text-[0.625rem] text-slate-400 truncate max-w-[180px]">
                 {file.folderPath}
               </td>
             </tr>
@@ -386,13 +386,13 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
               </span>
               {quarterBadge(file)}
             </div>
-            <span className="text-[10px] text-slate-400 font-mono uppercase">
+            <span className="text-[0.625rem] text-slate-400 font-mono uppercase">
               {file.extension} • {formatSize(file.size)}
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+            <span className="text-[0.625rem] text-slate-500 dark:text-slate-400">
               {file.classification.month} {file.classification.financialYear.replace('FY ', '')}
             </span>
-            <span className="text-[10px] text-slate-400 font-mono truncate">{file.folderPath}</span>
+            <span className="text-[0.625rem] text-slate-400 font-mono truncate">{file.folderPath}</span>
           </div>
         </div>
       ))}
@@ -420,36 +420,36 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
                 <span className="font-extrabold text-sm text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                   {file.name}
                 </span>
-                {quarterBadge(file, 'text-[10px] px-2 py-0.5')}
+                {quarterBadge(file, 'text-[0.625rem] px-2 py-0.5')}
               </div>
-              <p className="text-[11px] text-slate-400 font-mono truncate mt-0.5">{file.path}</p>
+              <p className="text-[0.6875rem] text-slate-400 font-mono truncate mt-0.5">{file.path}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase">
+              <span className="text-[0.625rem] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase">
                 {file.extension}
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
+              <span className="text-[0.625rem] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
                 {formatSize(file.size)}
               </span>
               {file.metadata?.exifResolution && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                <span className="text-[0.625rem] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
                   {file.metadata.exifResolution}
                 </span>
               )}
               {file.metadata?.exifCamera && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-600 dark:text-pink-400">
+                <span className="text-[0.625rem] font-mono px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-600 dark:text-pink-400">
                   {file.metadata.exifCamera}
                 </span>
               )}
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <span className="text-[0.625rem] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 {file.classification.quarter} • {file.classification.month}
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">
+              <span className="text-[0.625rem] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">
                 Modified {formatDate(file.modifiedDate)}
               </span>
               {file.isDuplicate && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                   Duplicate
                 </span>
               )}
@@ -486,7 +486,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
         return renderIconGrid(
           'grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10',
           'aspect-square',
-          'text-[10px]',
+          'text-[0.625rem]',
           false
         );
       case 'smIcons':
@@ -523,13 +523,13 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
       <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-sm shrink-0">
         {/* Extension Filters */}
         <div className="flex flex-col gap-1.5 min-w-0">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <span className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
             Filter by Type:
           </span>
           <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setSelectedExt('ALL')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors ${
+              className={`px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold transition-colors ${
                 selectedExt === 'ALL'
                   ? 'bg-emerald-500 text-white shadow-sm'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -544,7 +544,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
                   key={fmt.key}
                   onClick={() => setSelectedExt(fmt.key)}
                   title={fmt.description}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold uppercase transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg text-[0.6875rem] font-mono font-bold uppercase transition-colors ${
                     selectedExt === fmt.key
                       ? 'bg-emerald-500 text-white shadow-sm'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -574,7 +574,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
               <Icon className="w-4 h-4" />
             </button>
           ))}
-          <span className="hidden xl:inline text-[10px] font-bold text-slate-400 pl-1.5 pr-1 whitespace-nowrap">
+          <span className="hidden xl:inline text-[0.625rem] font-bold text-slate-400 pl-1.5 pr-1 whitespace-nowrap">
             {VIEW_MODES.find((v) => v.id === viewMode)?.label}
           </span>
         </div>
@@ -591,10 +591,16 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
               ? 'No Images Found on USB'
               : `No ${formatByKey(selectedExt)?.label || selectedExt} Images Found`}
           </h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-            {imageFiles.length === 0
-              ? 'There are no viewable files in the current scanned index.'
-              : 'Try selecting a different extension filter above.'}
+          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+            {imageFiles.length === 0 ? (
+              <>
+                The <span className="font-bold text-slate-700 dark:text-slate-300">Photo Gallery</span> displays all viewable images (JPEG, PNG, WebP, GIF, SVG, AVIF) with 8 layout modes, extension filtering, a fullscreen lightbox with zoom and rotate, and full EXIF metadata inspection. Connect a USB drive containing images to get started.
+              </>
+            ) : (
+              <>
+                No <span className="font-bold text-slate-700 dark:text-slate-300">{formatByKey(selectedExt)?.label || selectedExt}</span> images found with the current filter. Try selecting a different extension filter above or view all image types.
+              </>
+            )}
           </p>
         </div>
       ) : (
@@ -608,7 +614,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
               </h3>
             </div>
             {selectedExt !== 'ALL' && formatByKey(selectedExt) && (
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-start gap-1.5">
+              <p className="text-[0.6875rem] text-slate-500 dark:text-slate-400 mt-1 flex items-start gap-1.5">
                 <Info className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
                 <span>
                   <span className="font-bold uppercase">{formatByKey(selectedExt)!.label}</span> (
@@ -694,44 +700,44 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
             <div className="w-full md:w-80 bg-slate-900 border-t md:border-t-0 md:border-l border-slate-800 p-5 flex flex-col justify-between text-xs font-sans overflow-y-auto">
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <span className="font-bold text-slate-200 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                  <span className="font-bold text-slate-200 uppercase tracking-wider text-[0.6875rem] flex items-center gap-1.5">
                     <Info className="w-4 h-4 text-emerald-400" /> EXIF Metadata
                   </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 font-mono">
+                  <span className="px-2 py-0.5 rounded text-[0.625rem] font-bold bg-emerald-500/10 text-emerald-400 font-mono">
                     {selectedFile.classification.quarter}
                   </span>
                 </div>
 
                 <div className="space-y-2.5 text-slate-300">
                   <div>
-                    <span className="text-slate-500 block text-[10px] uppercase">Filename</span>
+                    <span className="text-slate-500 block text-[0.625rem] uppercase">Filename</span>
                     <span className="font-bold text-slate-100 break-words">{selectedFile.name}</span>
                   </div>
 
                   <div>
-                    <span className="text-slate-500 block text-[10px] uppercase">Path</span>
+                    <span className="text-slate-500 block text-[0.625rem] uppercase">Path</span>
                     <span className="font-mono text-slate-400 break-words">{selectedFile.path}</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <span className="text-slate-500 block text-[10px] uppercase">Type</span>
+                      <span className="text-slate-500 block text-[0.625rem] uppercase">Type</span>
                       <span className="font-mono text-slate-200 uppercase">
                         .{selectedFile.extension}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-500 block text-[10px] uppercase">File Size</span>
+                      <span className="text-slate-500 block text-[0.625rem] uppercase">File Size</span>
                       <span className="font-mono text-slate-200">{formatSize(selectedFile.size)}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500 block text-[10px] uppercase">Resolution</span>
+                      <span className="text-slate-500 block text-[0.625rem] uppercase">Resolution</span>
                       <span className="font-mono text-slate-200">
                         {selectedFile.metadata?.exifResolution || '3840 x 2160 (4K)'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-500 block text-[10px] uppercase">Camera</span>
+                      <span className="text-slate-500 block text-[0.625rem] uppercase">Camera</span>
                       <span className="font-mono text-slate-200">
                         {selectedFile.metadata?.exifCamera || 'Unknown'}
                       </span>
@@ -739,7 +745,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
                   </div>
 
                   <div>
-                    <span className="text-slate-500 block text-[10px] uppercase">Financial Quarter</span>
+                    <span className="text-slate-500 block text-[0.625rem] uppercase">Financial Quarter</span>
                     <span className="font-semibold text-emerald-400">
                       {selectedFile.classification.quarter} — {selectedFile.classification.month} (
                       {selectedFile.classification.financialYear})
@@ -747,15 +753,15 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ files }) => {
                   </div>
 
                   <div>
-                    <span className="text-slate-500 block text-[10px] uppercase">SHA-256 Hash</span>
-                    <span className="font-mono text-[10px] text-slate-400 break-all bg-slate-950 p-2 rounded block">
+                    <span className="text-slate-500 block text-[0.625rem] uppercase">SHA-256 Hash</span>
+                    <span className="font-mono text-[0.625rem] text-slate-400 break-all bg-slate-950 p-2 rounded block">
                       {selectedFile.sha256}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-800 text-slate-500 text-[11px]">
+              <div className="pt-4 border-t border-slate-800 text-slate-500 text-[0.6875rem]">
                 Item {selectedIndex + 1} of {displayFiles.length}
               </div>
             </div>

@@ -92,7 +92,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             onKeyDown={handleKeyDownInMenu}
             className="w-full bg-transparent text-sm font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
           />
-          <kbd className="px-2 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-200 dark:bg-slate-800 rounded">
+          <kbd className="px-2 py-0.5 text-[0.625rem] font-mono text-slate-400 bg-slate-200 dark:bg-slate-800 rounded">
             ESC
           </kbd>
         </div>
@@ -101,7 +101,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         <div className="p-2 max-h-96 overflow-y-auto space-y-1 text-xs">
           {query.trim() === '' ? (
             <div className="p-3 space-y-3 text-slate-500">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+              <span className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400 block">
                 Quick Navigation Shortcuts
               </span>
 
@@ -172,14 +172,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     <FileText className="w-4 h-4 text-slate-400 shrink-0" />
                     <div className="truncate">
                       <span className="font-bold block truncate">{file.name}</span>
-                      <span className="text-[10px] text-slate-400 font-mono block truncate">
+                      <span className="text-[0.625rem] text-slate-400 font-mono block truncate">
                         {file.path}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-2 shrink-0">
-                    <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">
+                    <span className="px-2 py-0.5 text-[0.625rem] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">
                       {file.classification.quarter}
                     </span>
                     {isSelected && <CornerDownLeft className="w-3.5 h-3.5 text-emerald-500" />}
@@ -191,7 +191,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-400 flex items-center justify-between px-4">
+        <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-[0.625rem] text-slate-400 flex items-center justify-between px-4">
           <span>Use ↑ ↓ to navigate • ENTER to select</span>
           <span>QuarterSort AI Search</span>
         </div>

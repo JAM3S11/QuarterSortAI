@@ -61,10 +61,10 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative w-full max-w-4xl bg-slate-900/95 border border-emerald-500/40 rounded-2xl shadow-[0_0_50px_rgba(0,255,102,0.15)] overflow-hidden text-slate-100 flex flex-col max-h-[90vh]"
+        className="relative w-full max-w-4xl bg-slate-900/95 border border-emerald-500/40 rounded-2xl shadow-[0_0_50px_rgba(0,255,102,0.15)] overflow-y-auto text-slate-100 flex flex-col max-h-[90vh]"
       >
         {/* Neon top bar */}
-        <div className="px-4 sm:px-6 py-4 border-b border-emerald-500/30 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-4 sm:px-6 py-4 border-b border-emerald-500/30 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center space-x-3">
             <div className="relative">
               <ShieldCheck className="w-6 h-6 text-emerald-400 animate-pulse" />
@@ -80,7 +80,7 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
           </div>
 
           <div className="flex items-center space-x-3">
-            <span className="px-2.5 py-1 text-[11px] rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono">
+            <span className="px-2.5 py-1 text-[0.6875rem] rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono">
               {isComplete ? 'SCAN COMPLETE' : 'SCANNING ACTIVE'}
             </span>
             {isComplete && (
@@ -96,7 +96,7 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
         </div>
 
         {/* HUD Scanner Middle Section */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-900/50 relative overflow-hidden">
+        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-900/50 relative overflow-hidden shrink-0">
           {/* Animated Neon Scan Lines overlay */}
           {!isComplete && (
             <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,transparent_0%,rgba(0,255,102,0.05)_50%,transparent_100%)] bg-[length:100%_8px] animate-pulse" />
@@ -132,7 +132,7 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
               <span className="text-2xl font-extrabold tracking-tight text-emerald-400">
                 {scannedCount}
               </span>
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 mt-0.5">Scanned Documents</p>
+              <p className="text-[0.6875rem] uppercase tracking-wider text-slate-400 mt-0.5">Scanned Documents</p>
             </div>
           </div>
 
@@ -155,7 +155,7 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
             </div>
 
             <div className="col-span-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-              <p className="text-[11px] text-slate-400 uppercase flex items-center gap-1.5 mb-1">
+              <p className="text-[0.6875rem] text-slate-400 uppercase flex items-center gap-1.5 mb-1">
                 <Lock className="w-3.5 h-3.5 text-emerald-400" />
                 Current Scanner Traversal
               </p>
@@ -173,7 +173,7 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
             <span>REAL-TIME AUDIT LOG STREAM</span>
           </div>
 
-          <div className="space-y-1 text-[11px] font-mono leading-relaxed break-all">
+          <div className="space-y-1 text-[0.6875rem] font-mono leading-relaxed break-all">
             {logs.map((log, index) => {
               let color = 'text-slate-300';
               if (log.type === 'INFO') color = 'text-cyan-400';
@@ -194,7 +194,7 @@ export const CyberScannerModal: React.FC<CyberScannerModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-950/90 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+        <div className="p-4 bg-slate-950/90 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 shrink-0">
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Virtual Storage Engine: Non-destructive read-only index</span>

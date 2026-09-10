@@ -44,7 +44,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
             Advanced Document Filters
           </h2>
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+          <span className="text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
             {totalResults} Matched
           </span>
         </div>
@@ -61,7 +61,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Quarter Selector */}
         <div>
-          <label className="text-[11px] font-bold uppercase text-slate-400 block mb-1.5">
+          <label className="text-[0.6875rem] font-bold uppercase text-slate-400 block mb-1.5">
             Financial Quarter
           </label>
           <div className="flex flex-wrap gap-1.5">
@@ -83,7 +83,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
         {/* File Category Pills */}
         <div>
-          <label className="text-[11px] font-bold uppercase text-slate-400 block mb-1.5">
+          <label className="text-[0.6875rem] font-bold uppercase text-slate-400 block mb-1.5">
             Document Category
           </label>
           <div className="flex flex-wrap gap-1.5">
@@ -105,7 +105,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
         {/* Quick Date Filters & Exact DD/MM/YYYY */}
         <div>
-          <label className="text-[11px] font-bold uppercase text-slate-400 block mb-1.5">
+          <label className="text-[0.6875rem] font-bold uppercase text-slate-400 block mb-1.5">
             Date Range & Quick Presets
           </label>
           <div className="flex flex-wrap gap-1 mb-2">
@@ -113,7 +113,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <button
                 key={preset.id}
                 onClick={() => onChangeFilterOptions({ ...filterOptions, dateFilterType: preset.id })}
-                className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors ${
+                className={`px-2.5 py-1 text-[0.6875rem] font-semibold rounded-lg transition-colors ${
                   filterOptions.dateFilterType === preset.id
                     ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950 font-bold'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'

@@ -97,10 +97,10 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
           <div className="rounded-xl border border-cyan-500/30 bg-slate-950/60 overflow-hidden">
             <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-cyan-500/20 bg-slate-950/80">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-wider text-cyan-400 font-bold flex items-center gap-1.5">
+                <p className="text-[0.625rem] uppercase tracking-wider text-cyan-400 font-bold flex items-center gap-1.5">
                   <Gauge className="w-3.5 h-3.5" /> Drive slot — select which drive is connecting
                 </p>
-                <p className="text-[11px] leading-relaxed text-slate-400 mt-0.5">
+                <p className="text-[0.6875rem] leading-relaxed text-slate-400 mt-0.5">
                   Pick the drive, e.g. <span className="font-mono text-slate-200">USB Drive (G:)</span> or{' '}
                   <span className="font-mono text-slate-200">Local Disk (C:)</span>. It will be auto-selected
                   and applied after the scan.
@@ -109,7 +109,7 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
               <button
                 onClick={onRefreshDisks}
                 disabled={isRefreshing}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-cyan-500/40 hover:bg-cyan-500/10 text-cyan-400 text-[10px] font-bold transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-cyan-500/40 hover:bg-cyan-500/10 text-cyan-400 text-[0.625rem] font-bold transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Re-scan connected drives"
               >
                 <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -174,12 +174,12 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
                           <span className="text-xs font-bold text-slate-100 truncate">
                             {disk.label || 'Unlabelled drive'}
                           </span>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 uppercase font-bold shrink-0">
+                          <span className="text-[0.5625rem] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 uppercase font-bold shrink-0">
                             {disk.driveType === 'removable' ? 'Removable' : 'Fixed'}
                           </span>
-                          <span className="text-[10px] font-mono text-slate-500 shrink-0">{disk.id}</span>
+                          <span className="text-[0.625rem] font-mono text-slate-500 shrink-0">{disk.id}</span>
                         </div>
-                        <p className="text-[10px] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-2">
+                        <p className="text-[0.625rem] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-2">
                           {disk.capacityEstimated ? (
                             <span>Capacity unavailable</span>
                           ) : (
@@ -222,28 +222,28 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
               <Lock className="w-4 h-4 text-emerald-400 mx-auto mb-1.5" />
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Read-Only</p>
-              <p className="text-[11px] text-slate-500">Never writes to the source drive</p>
+              <p className="text-[0.625rem] uppercase tracking-wider text-slate-400 font-bold">Read-Only</p>
+              <p className="text-[0.6875rem] text-slate-500">Never writes to the source drive</p>
             </div>
             <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
               <ShieldCheck className="w-4 h-4 text-emerald-400 mx-auto mb-1.5" />
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Privacy</p>
-              <p className="text-[11px] text-slate-500">Files never leave your device</p>
+              <p className="text-[0.625rem] uppercase tracking-wider text-slate-400 font-bold">Privacy</p>
+              <p className="text-[0.6875rem] text-slate-500">Files never leave your device</p>
             </div>
             <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
               <Hash className="w-4 h-4 text-emerald-400 mx-auto mb-1.5" />
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Integrity</p>
-              <p className="text-[11px] text-slate-500">Every file SHA-256 hashed locally</p>
+              <p className="text-[0.625rem] uppercase tracking-wider text-slate-400 font-bold">Integrity</p>
+              <p className="text-[0.6875rem] text-slate-500">Every file SHA-256 hashed locally</p>
             </div>
           </div>
 
           <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
             <Gauge className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
             <div className="w-full min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+              <p className="text-[0.625rem] uppercase tracking-wider text-slate-400 font-bold">
                 Automatic capacity detection
               </p>
-              <p className="text-[11px] leading-relaxed text-slate-400 mt-1">
+              <p className="text-[0.6875rem] leading-relaxed text-slate-400 mt-1">
                 Real total / free / used storage is read from the drive selected in the slot (or matched by
                 drive letter / label) and applied to the USB Overview. No manual entry needed.
               </p>
@@ -252,7 +252,7 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
 
           <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <p className="text-[11px] leading-relaxed text-amber-200/90">
+            <p className="text-[0.6875rem] leading-relaxed text-amber-200/90">
               You can connect without choosing a drive — it will just use estimated capacity. Your last picked
               drive is remembered so it shows up pre-selected next time.
             </p>
@@ -283,7 +283,7 @@ export const ConnectConfirmationModal: React.FC<ConnectConfirmationModalProps> =
                 className="w-full text-left p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition-colors group"
               >
                 <p className="text-xs font-medium text-slate-400 group-hover:text-slate-300">No drive? Try the demo dataset instead</p>
-                <p className="text-[11px] text-slate-600 mt-0.5">Pre-loaded with sample files to explore the dashboard without connecting anything.</p>
+                <p className="text-[0.6875rem] text-slate-600 mt-0.5">Pre-loaded with sample files to explore the dashboard without connecting anything.</p>
               </button>
             )}
           </div>

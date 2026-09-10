@@ -53,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Search className="w-4 h-4 text-slate-400" />
               <span className="truncate">Search files, quarters, SHA256 hashes...</span>
             </div>
-            <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-400 bg-slate-200 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-700">
+            <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 text-[0.625rem] font-mono font-medium text-slate-400 bg-slate-200 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-700">
               <Command className="w-3 h-3" /> K
             </kbd>
           </button>

@@ -164,12 +164,12 @@ export const SheetRenderer: React.FC<ViewerRenderProps> = (props) => {
                 {s.name}
               </button>
             ))}
-            <span className="ml-auto text-[10px] font-mono text-slate-400 px-2">
+            <span className="ml-auto text-[0.625rem] font-mono text-slate-400 px-2">
               {sheet.rows.length.toLocaleString()} rows{truncated ? ' shown' : ''}
             </span>
           </div>
           {truncated && (
-            <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/60 border-b border-amber-200 dark:border-amber-900 text-[11px] text-amber-700 dark:text-amber-300">
+            <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/60 border-b border-amber-200 dark:border-amber-900 text-[0.6875rem] text-amber-700 dark:text-amber-300">
               This spreadsheet is large — showing the first {MAX_SHEET_ROWS.toLocaleString()} rows per sheet. Download the file to view everything.
             </div>
           )}

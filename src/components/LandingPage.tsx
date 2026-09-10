@@ -81,8 +81,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
               <div className="relative w-full max-w-sm">
                 <div className="w-full rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-2xl shadow-emerald-500/5 backdrop-blur-sm">
                   <div className="mb-4 flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Quarter Summary</span>
-                    <span className="flex items-center gap-1.5 text-[10px] text-emerald-500/80">
+                    <span className="text-[0.625rem] font-bold uppercase tracking-widest text-slate-500">Quarter Summary</span>
+                    <span className="flex items-center gap-1.5 text-[0.625rem] text-emerald-500/80">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       local scan
                     </span>
@@ -96,7 +96,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
                       { label: 'Q4 · Apr–Jun', pct: 41, count: 41, color: 'bg-violet-500/70' },
                     ].map((q) => (
                       <div key={q.label} className="space-y-1">
-                        <div className="flex items-center justify-between text-[10px]">
+                        <div className="flex items-center justify-between text-[0.625rem]">
                           <span className="text-slate-400 font-medium">{q.label}</span>
                           <span className="font-mono text-slate-500">{q.count} files</span>
                         </div>
@@ -112,7 +112,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
                     ))}
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[10px] text-slate-500">
+                  <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[0.625rem] text-slate-500">
                     <span>164 files · 36 folders</span>
                     <span className="flex items-center gap-1 text-emerald-500/70">
                       <ShieldCheck className="w-3 h-3" />
@@ -140,7 +140,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
                   {i < 2 && <div className="pointer-events-none absolute -right-4 top-8 hidden text-slate-800 md:block"><ArrowRight className="h-5 w-5" /></div>}
                   <div className="rounded-xl border border-slate-800/60 bg-slate-900/40 p-6">
                     <div className="mb-4 flex items-center gap-3">
-                      <span className="text-[11px] font-mono font-semibold text-slate-600">{s.step}</span>
+                      <span className="text-[0.6875rem] font-mono font-semibold text-slate-600">{s.step}</span>
                       <div className="h-px flex-1 bg-slate-800/60" />
                     </div>
                     <Icon className="mb-3 h-5 w-5 text-emerald-400/70" />
@@ -157,7 +157,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
       <section className="border-t border-slate-800/60">
         <div className="mx-auto max-w-6xl px-6 py-16 lg:py-20">
           <motion.div className="text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500">Built for compliance</p>
+            <p className="mb-2 text-[0.6875rem] font-semibold uppercase tracking-widest text-slate-500">Built for compliance</p>
             <h2 className="text-2xl font-bold sm:text-3xl">What happens after you connect.</h2>
           </motion.div>
 
@@ -177,7 +177,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
       </section>
 
       <footer className="border-t border-slate-800/60">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-center px-6 text-[11px] text-slate-600">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-center px-6 text-[0.6875rem] text-slate-600">
           <span>QuarterSort AI — scan, classify, analyze. All local.</span>
         </div>
       </footer>

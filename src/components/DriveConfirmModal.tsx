@@ -64,7 +64,7 @@ export const DriveConfirmModal: React.FC<DriveConfirmModalProps> = ({
 
         <div className="p-6 space-y-4 bg-slate-900/50">
           {scannerRootName && (
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[0.6875rem] text-slate-400">
               Scanned folder root: <span className="font-mono font-bold text-slate-300">{scannerRootName}</span>
             </p>
           )}
@@ -89,15 +89,15 @@ export const DriveConfirmModal: React.FC<DriveConfirmModalProps> = ({
                       <span className="text-xs font-bold text-slate-100 truncate">
                         {disk.label || 'Unlabelled drive'}
                       </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 uppercase font-bold">
+                      <span className="text-[0.5625rem] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 uppercase font-bold">
                         {disk.driveType === 'removable' ? 'Removable' : 'Fixed'}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-500">{disk.id}</span>
+                      <span className="text-[0.625rem] font-mono text-slate-500">{disk.id}</span>
                     </div>
                     {disk.capacityEstimated ? (
-                      <p className="text-[10px] text-slate-500 mt-0.5">Capacity unavailable</p>
+                      <p className="text-[0.625rem] text-slate-500 mt-0.5">Capacity unavailable</p>
                     ) : (
-                      <p className="text-[10px] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-2">
+                      <p className="text-[0.625rem] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-2">
                         <span>{formatSize(disk.totalCapacityBytes)}</span>
                         <span>·</span>
                         <span>{formatSize(disk.totalCapacityBytes - disk.freeBytes)} used</span>
@@ -120,7 +120,7 @@ export const DriveConfirmModal: React.FC<DriveConfirmModalProps> = ({
 
           <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <p className="text-[11px] leading-relaxed text-amber-200/90">
+            <p className="text-[0.6875rem] leading-relaxed text-amber-200/90">
               The matched drive is preselected. If you're not sure, skip to keep an estimate — "Used" is always
               the real scanned size either way.
             </p>

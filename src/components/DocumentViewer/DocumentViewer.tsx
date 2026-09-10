@@ -19,18 +19,18 @@ import { PrintPayload, PRINT_PAGE_CSS, openPrintWindow, writePrintWindow, escape
 const VIEWER_STYLES = `
   .docx-wrapper {
     background: transparent !important;
-    padding: 28px 20px 0 !important;
+    padding: 1.75rem 1.25rem 0 !important;
   }
   .docx-wrapper > section.docx {
     box-shadow: 0 4px 22px rgba(2, 6, 23, 0.18);
-    margin-bottom: 32px !important;
+    margin-bottom: 2rem !important;
     border-radius: 2px;
   }
   .docx-wrapper > section.docx,
   section.docx { background: #fff !important; color: #1e293b; margin-left: auto; margin-right: auto; }
   .qso-pdf-page {
     position: relative;
-    margin: 0 auto 28px;
+    margin: 0 auto 1.75rem;
     background: #fff;
     box-shadow: 0 4px 22px rgba(2, 6, 23, 0.18);
   }
@@ -56,7 +56,7 @@ const VIEWER_STYLES = `
   .qso-text-page, .qso-doc-page {
     background: #fff;
     box-shadow: 0 4px 22px rgba(2, 6, 23, 0.18);
-    padding: 40px 48px;
+    padding: 2.5rem 3rem;
     box-sizing: border-box;
     color: #1e293b;
     margin-left: auto;
@@ -64,7 +64,7 @@ const VIEWER_STYLES = `
   }
   .qso-text-pre {
     font-family: 'Cascadia Code', 'Consolas', monospace;
-    font-size: 11px;
+    font-size: 0.6875rem;
     line-height: 1.55;
     white-space: pre-wrap;
     word-break: break-word;
@@ -73,18 +73,18 @@ const VIEWER_STYLES = `
   }
   .qso-doc-page .qso-text-pre {
     font-family: Calibri, 'Segoe UI', sans-serif;
-    font-size: 12.5px;
+    font-size: 0.78125rem;
     line-height: 1.65;
   }
   .qso-doc-banner {
     background: #fffbeb;
     border: 1px solid #fcd34d;
     color: #92400e;
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 600;
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin-bottom: 16px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
   }
   mark.qso-search { background: #ffe066; color: inherit; border-radius: 2px; }
   mark.qso-search.qso-match-active { background: #ffb800; }
@@ -474,7 +474,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
           {tocOpen && tocItems.length > 0 && (
             <aside className="absolute inset-y-0 left-0 z-30 w-64 max-w-[85vw] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shadow-xl md:shadow-none md:static">
               <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-800">
-                <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-300">Contents</span>
+                <span className="text-[0.6875rem] font-extrabold text-slate-600 dark:text-slate-300">Contents</span>
                 <button onClick={() => setTocOpen(false)} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -492,7 +492,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
           {rightPanel && (
             <aside className="absolute inset-y-0 right-0 z-30 w-80 max-w-[85vw] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shadow-xl lg:shadow-none lg:static">
               <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-800 shrink-0">
-                <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-300">
+                <span className="text-[0.6875rem] font-extrabold text-slate-600 dark:text-slate-300">
                   {rightPanel === 'insights' ? 'Insights' : 'Comments'}
                 </span>
                 <button onClick={() => setRightPanel(null)} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
@@ -513,7 +513,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ file, files = []
         </div>
 
         {!isPaged && (
-          <div className="px-3 py-1.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center gap-3 text-[10px] font-mono text-slate-400 shrink-0">
+          <div className="px-3 py-1.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center gap-3 text-[0.625rem] font-mono text-slate-400 shrink-0">
             <span>{ext.toUpperCase()} · {wordCount.toLocaleString()} words</span>
             <span className="ml-auto">{file.name}</span>
           </div>

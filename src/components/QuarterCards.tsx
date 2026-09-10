@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { ScannedFile, QuarterId, MonthName } from '../types';
 import { QUARTER_MONTHS, QUARTER_LABELS, getFinancialYear } from '../lib/quarterEngine';
-import { Calendar, FileText, ArrowRight, HardDrive, PieChart, ChevronDown } from 'lucide-react';
+import { Calendar, FileText, ArrowRight, HardDrive, PieChart, ChevronDown, Check } from 'lucide-react';
 
 interface QuarterCardsProps {
   files: ScannedFile[];
@@ -92,6 +93,11 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
     return bytes + ' B';
   };
 
+  const fyOptionLabel = (d: FYData) => {
+    const count = d.quarters.Q1.fileCount + d.quarters.Q2.fileCount + d.quarters.Q3.fileCount + d.quarters.Q4.fileCount;
+    return `${d.fyLabel} (${count} files)${d.fyStartYear === currentFYStartYear ? ' — Current' : ''}`;
+  };
+
   if (fyGroups.length === 0) {
     return (
       <div className="space-y-6">
@@ -104,7 +110,9 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
         <div className="p-12 text-center bg-slate-900/40 rounded-2xl border border-slate-800">
           <PieChart className="w-10 h-10 text-slate-600 mx-auto mb-3" />
           <h4 className="font-bold text-slate-400 text-sm">No files scanned yet</h4>
-          <p className="text-xs text-slate-500 mt-1">Connect a USB drive to see quarter classification.</p>
+          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+            The <span className="font-bold text-slate-300">Dashboard</span> organises every scanned file into financial quarters (Q1–Q4) and months, showing file counts, storage sizes, and per-month breakdowns so you can audit document distribution at a glance. Connect a USB drive to see your quarter classification.
+          </p>
         </div>
       </div>
     );
@@ -124,28 +132,35 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
             </h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="text-[11px] uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5">
+            <label className="text-[0.6875rem] uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-emerald-400" />
               Financial Year
             </label>
-            <div className="relative">
-              <select
-                value={currentFY ? currentFY.fyStartYear : ''}
-                onChange={(e) => setSelectedFYStart(e.target.value ? Number(e.target.value) : null)}
-                className="appearance-none pl-3 pr-8 py-1.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer"
-              >
-                {fyGroups.map(([fyLabel, d]) => {
-                  const count = d.quarters.Q1.fileCount + d.quarters.Q2.fileCount + d.quarters.Q3.fileCount + d.quarters.Q4.fileCount;
-                  const isCurrent = d.fyStartYear === currentFYStartYear;
-                  return (
-                    <option key={fyLabel} value={d.fyStartYear}>
-                      {fyLabel} ({count} files){isCurrent ? ' — Current' : ''}
-                    </option>
-                  );
-                })}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-            </div>
+            <Listbox
+              value={currentFY ? currentFY.fyStartYear : null}
+              onChange={(val) => setSelectedFYStart(val)}
+            >
+              <div className="relative">
+                <ListboxButton className="inline-flex items-center pl-3 pr-8 py-1.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer">
+                  <span className="truncate max-w-64">{currentFY ? fyOptionLabel(currentFY) : 'Select Year'}</span>
+                </ListboxButton>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                <ListboxOptions className="absolute left-0 right-0 top-full mt-1.5 z-30 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-1 text-xs font-semibold text-slate-100">
+                  {fyGroups.map(([fyLabel, d]) => (
+                    <ListboxOption
+                      key={fyLabel}
+                      value={d.fyStartYear}
+                      className="data-[focus]:bg-slate-700 data-[selected]:text-emerald-400 cursor-pointer select-none px-3 py-2 flex items-center justify-between gap-3"
+                    >
+                      <span className="truncate">{fyOptionLabel(d)}</span>
+                      {currentFY && d.fyStartYear === currentFY.fyStartYear && (
+                        <Check className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                      )}
+                    </ListboxOption>
+                  ))}
+                </ListboxOptions>
+              </div>
+            </Listbox>
             <button
               onClick={() => onSelectQuarterFilter('ALL', 'ALL')}
               className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-1.5"
@@ -167,7 +182,7 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
               {' '}&mdash;{' '}
               {QUARTER_MONTHS.Q4.map(m => `${m} ${currentFY.fyStartYear + 1}`).join(' · ')}
             </p>
-            <span className="hidden sm:inline text-[11px] text-slate-600">
+            <span className="hidden sm:inline text-[0.6875rem] text-slate-600">
               1 Jul {currentFY.fyStartYear} &rarr; 30 Jun {currentFY.fyStartYear + 1}
             </span>
           </div>
@@ -201,12 +216,12 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
                         {qId}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[0.6875rem] text-slate-500">
                       {totalScanned > 0 ? Math.round((qData.fileCount / totalScanned) * 100) : 0}%
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-slate-500 mb-3">
+                  <p className="text-[0.6875rem] text-slate-500 mb-3">
                     {QUARTER_MONTHS[qId].map((m, i) => `${m} ${monthYearForQuarter(m, i)}`).join(' · ')}
                   </p>
 
@@ -243,7 +258,7 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
 
                   <button
                     onClick={() => onSelectQuarterFilter(qId, 'ALL')}
-                    className={`mt-3 text-[11px] font-semibold ${cfg.color} hover:underline flex items-center gap-1`}
+                    className={`mt-3 text-[0.6875rem] font-semibold ${cfg.color} hover:underline flex items-center gap-1`}
                   >
                     Explore all {qId} files <ArrowRight className="w-3 h-3" />
                   </button>
@@ -281,7 +296,7 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
               <p className="text-xs font-bold text-amber-400">
                 {files.filter(f => f.classification.needsReview).length} Need{files.filter(f => f.classification.needsReview).length === 1 ? '' : 's'} Review
               </p>
-              <p className="text-[11px] text-amber-500/70">Click to review low-confidence files</p>
+              <p className="text-[0.6875rem] text-amber-500/70">Click to review low-confidence files</p>
             </div>
           </button>
         )}

@@ -20,7 +20,7 @@ export const PRINT_PAGE_CSS = `
 
   .qso-text-page, .qso-doc-page {
     box-sizing: border-box;
-    padding: 24px 28px;
+    padding: 1.5rem 1.75rem;
     background: #fff;
     max-width: 100% !important;
     break-after: page;
@@ -29,14 +29,14 @@ export const PRINT_PAGE_CSS = `
   .qso-text-page:last-child, .qso-doc-page:last-child { break-after: auto; page-break-after: auto; }
   .qso-text-pre {
     font-family: 'Cascadia Code', Consolas, 'Courier New', monospace;
-    font-size: 11px;
+    font-size: 0.6875rem;
     line-height: 1.55;
     white-space: pre-wrap;
     word-break: break-word;
     margin: 0;
     color: #1e293b;
   }
-  .qso-doc-page .qso-text-pre { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12.5px; line-height: 1.65; }
+  .qso-doc-page .qso-text-pre { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 0.78125rem; line-height: 1.65; }
   .qso-doc-banner { display: none !important; }
 
   .docx-wrapper { padding: 0 !important; background: #fff !important; }
@@ -53,8 +53,8 @@ export const PRINT_PAGE_CSS = `
   .pp:last-child { break-after: auto; page-break-after: auto; }
   .pp img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
 
-  table { border-collapse: collapse; font-size: 10px; font-family: Consolas, 'Courier New', monospace; width: 100%; }
-  th, td { border: 1px solid #cbd5e1; padding: 4px 8px; text-align: left; white-space: nowrap; }
+  table { border-collapse: collapse; font-size: 0.625rem; font-family: Consolas, 'Courier New', monospace; width: 100%; }
+  th, td { border: 1px solid #cbd5e1; padding: 0.25rem 0.5rem; text-align: left; white-space: nowrap; }
   th { background: #f1f5f9; font-weight: 700; }
 `;
 

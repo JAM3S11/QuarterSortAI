@@ -18,12 +18,12 @@ export const TocPanel: React.FC<TocPanelProps> = ({ items, onNavigate }) => {
   }
   return (
     <div className="p-2 space-y-0.5 overflow-y-auto">
-      <p className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Contents</p>
+      <p className="px-2 py-1.5 text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">Contents</p>
       {items.map((item) => (
         <button
           key={item.id}
           onClick={() => onNavigate(item)}
-          style={{ paddingLeft: `${8 + (item.level - 1) * 14}px` }}
+          style={{ paddingLeft: `${0.5 + (item.level - 1) * 0.875}rem` }}
           className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 ${
             item.level === 1 ? 'font-extrabold text-slate-800 dark:text-slate-100' : item.level === 2 ? 'font-bold text-slate-600 dark:text-slate-300' : 'font-medium text-slate-500 dark:text-slate-400'
           }`}

@@ -14,8 +14,8 @@ interface InsightsPanelProps {
 function Field({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <div className="min-w-0">
-      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">{label}</span>
-      <span className={`text-[11px] font-semibold text-slate-800 dark:text-slate-200 break-words ${mono ? 'font-mono text-[10px]' : ''}`}>
+      <span className="text-[0.5625rem] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">{label}</span>
+      <span className={`text-[0.6875rem] font-semibold text-slate-800 dark:text-slate-200 break-words ${mono ? 'font-mono text-[0.625rem]' : ''}`}>
         {value || '—'}
       </span>
     </div>
@@ -27,7 +27,7 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ file, insights, in
     <div className="p-4 space-y-4 overflow-y-auto text-xs">
       {/* Document properties */}
       <section>
-        <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-[0.6875rem] uppercase tracking-wider mb-2 flex items-center gap-1.5">
           <Info className="w-3.5 h-3.5 text-emerald-500" /> Document Properties
         </h4>
         <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50 dark:bg-slate-900">
@@ -39,7 +39,7 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ file, insights, in
           <Field label="Category" value={file.category} />
           <Field label="OCR Status" value={insights?.ocrStatus || (file.textContent ? 'Text available' : 'Not run')} />
           <div className="col-span-2">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Classification Confidence</span>
+            <span className="text-[0.5625rem] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Classification Confidence</span>
             <div className="flex items-center gap-2">
               <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
@@ -47,7 +47,7 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ file, insights, in
                   style={{ width: `${Math.round(file.classification.confidence * 100)}%` }}
                 />
               </div>
-              <span className="text-[10px] font-bold font-mono text-slate-700 dark:text-slate-300">
+              <span className="text-[0.625rem] font-bold font-mono text-slate-700 dark:text-slate-300">
                 {(file.classification.confidence * 100).toFixed(0)}%
               </span>
             </div>
@@ -57,7 +57,7 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ file, insights, in
 
       {/* AI Insights */}
       <section>
-        <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-[0.6875rem] uppercase tracking-wider mb-2 flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Document Insights
         </h4>
         {insightsLoading ? (
@@ -80,10 +80,10 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ file, insights, in
 
             {insights.keywords.length > 0 && (
               <div className="col-span-2">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Keywords</span>
+                <span className="text-[0.5625rem] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Keywords</span>
                 <div className="flex flex-wrap gap-1.5">
                   {insights.keywords.map((k) => (
-                    <span key={k} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <span key={k} className="text-[0.625rem] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                       {k}
                     </span>
                   ))}
@@ -93,10 +93,10 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ file, insights, in
 
             {insights.relatedDocuments.length > 0 && (
               <div className="col-span-2">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Related Documents</span>
+                <span className="text-[0.5625rem] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Related Documents</span>
                 <div className="space-y-1">
                   {insights.relatedDocuments.map((r) => (
-                    <div key={r.path} className="text-[10px] font-mono text-slate-600 dark:text-slate-300 truncate" title={r.path}>
+                    <div key={r.path} className="text-[0.625rem] font-mono text-slate-600 dark:text-slate-300 truncate" title={r.path}>
                       {r.name}
                     </div>
                   ))}

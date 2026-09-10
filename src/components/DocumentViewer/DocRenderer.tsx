@@ -76,7 +76,7 @@ export const DocRenderer: React.FC<ViewerRenderProps> = (props) => {
           pageEl.className = 'qso-doc-page';
           pageEl.style.width = `${PAGE_W}px`;
           pageEl.style.minHeight = `${PAGE_H}px`;
-          pageEl.style.marginBottom = '28px';
+          pageEl.style.marginBottom = '1.75rem';
           if (i === 0) {
             const banner = document.createElement('div');
             banner.className = 'qso-doc-banner';

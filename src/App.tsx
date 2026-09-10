@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Sidebar, TabId } from './components/Sidebar';
+import { ResizeHandle } from './components/ResizeHandle';
 import { QuarterCards } from './components/QuarterCards';
 import { FolderExplorer } from './components/FolderExplorer';
 import { FilterPanel } from './components/FilterPanel';
@@ -27,6 +28,7 @@ import { pickAndMeasureDrive, measureDriveFromHandle, supportsDirectoryPicker } 
 
 const LAST_DRIVE_KEY = 'quartersort.lastDriveId';
 const BROWSER_DRIVES_KEY = 'quartersort.browserDrives';
+const SIDEBAR_WIDTH_KEY = 'quartersort.sidebarWidth';
 
 const FILE_PICKER_CAPS = detectFilePickerCapability();
 
@@ -65,7 +67,11 @@ export default function App() {
 
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [sidebarResizing, setSidebarResizing] = useState<boolean>(false);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    const stored = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+    return stored ? Math.max(64, Math.min(400, Number(stored))) : 256;
+  });
   const [cyberMode, setCyberMode] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [ocrEnabled, setOcrEnabled] = useState<boolean>(false);
@@ -531,25 +537,41 @@ export default function App() {
         )}
 
         <aside
-          className={`absolute lg:static inset-y-0 left-0 z-40 w-64 ${
-            isSidebarCollapsed ? 'lg:w-20' : ''
-          } border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col shrink-0 shadow-2xl lg:shadow-none overflow-hidden transition-[width,transform] duration-300 ease-in-out ${
+          className={`absolute lg:static inset-y-0 left-0 z-40 w-64 lg:w-[var(--sidebar-w)] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col shrink-0 shadow-2xl lg:shadow-none overflow-hidden ${
+            sidebarResizing ? '' : 'transition-[width,transform] duration-300 ease-in-out'
+          } ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
+          style={{ ['--sidebar-w' as any]: `${sidebarWidth}px` }}
         >
           <Sidebar
             activeTab={activeTab}
             onSelectTab={setActiveTab}
             onNavigate={() => setIsSidebarOpen(false)}
-            isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={() => setIsSidebarCollapsed((v) => !v)}
+            sidebarWidth={sidebarWidth}
+            onToggleCollapse={() => {
+              const collapsed = sidebarWidth > 90;
+              const next = collapsed ? 64 : 256;
+              setSidebarWidth(next);
+              localStorage.setItem(SIDEBAR_WIDTH_KEY, String(next));
+            }}
             totalFiles={scannedFiles.length}
             duplicateCount={duplicateCount}
             photoCount={photoCount}
           />
         </aside>
 
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto hide-scrollbar max-w-7xl mx-auto w-full space-y-6 flex flex-col">
+        <ResizeHandle
+          width={sidebarWidth}
+          onResize={(w) => {
+            setSidebarWidth(w);
+            localStorage.setItem(SIDEBAR_WIDTH_KEY, String(w));
+          }}
+          onResizeStart={() => setSidebarResizing(true)}
+          onResizeEnd={() => setSidebarResizing(false)}
+        />
+
+        <main className="flex-1 min-w-0 p-4 lg:p-6 overflow-y-auto hide-scrollbar space-y-6 flex flex-col">
           {activeTab === 'dashboard' && (
             <QuarterCards
               files={scannedFiles}

@@ -322,6 +322,66 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
     fetchWellFindings();
   }, [files.length]);
 
+  if (files.length === 0 && !report) {
+    return (
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden amber-scrollbar space-y-6 pb-4">
+        <div className="sticky top-0 z-40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-slate-100/85 dark:to-slate-950/85 rounded-2xl border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-xl bg-slate-100/85 dark:bg-slate-950/85 p-5">
+          <div className="flex items-center space-x-4 min-w-0">
+            <div className="p-3.5 rounded-2xl bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 shrink-0">
+              <BrainCircuit className="w-8 h-8" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-display text-[1.35rem] leading-tight font-extrabold text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-2">
+                Groq AI Audit Report
+                <span
+                  title={`Model: ${defaultModel}`}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 min-w-0"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+                  <span className="sm:hidden">AI</span>
+                  <span className="hidden sm:inline max-w-[14rem] md:max-w-[20rem] truncate">
+                    Server-Side Groq · {defaultModel}
+                  </span>
+                </span>
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                Refined deep-dive repository audit — integrity scoring, dimensional analysis, findings, and prioritized actions
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={fetchWellFindings}
+            disabled={loading}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 disabled:cursor-wait ${
+              loading
+                ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 shadow-inner'
+                : 'bg-amber-600 hover:bg-amber-500 text-white shadow-sm shadow-amber-500/20 hover:shadow-md active:scale-[0.98]'
+            }`}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Running audit...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                Run AI Audit
+              </>
+            )}
+          </button>
+        </div>
+        <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <BrainCircuit className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+          <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">No Audit Data Available</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+            The <span className="font-bold text-slate-700 dark:text-slate-300">AI Insights</span> tab generates a comprehensive audit report powered by Groq AI — scoring metadata integrity (out of 100), assigning an audit grade, calculating compliance percentage, assessing risk levels, and providing dimensional deep-dives with prioritised recommendations. Click "Run AI Audit" to generate your first report.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden amber-scrollbar space-y-6 pb-4">
       <style>{`@keyframes progress-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } } .animate-progress { animation: progress-slide 1.4s ease-in-out infinite; }`}</style>
@@ -416,7 +476,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
             <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-400 animate-progress" style={{ width: '100%' }} />
             </div>
-            <p className="text-[10px] font-mono text-slate-400 mt-2 uppercase tracking-wider">
+            <p className="text-[0.625rem] font-mono text-slate-400 mt-2 uppercase tracking-wider">
               Querying Groq · {defaultModel}
             </p>
           </div>
@@ -439,7 +499,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
                 </div>
                 <div>
                   <p className="text-sm font-extrabold text-slate-800 dark:text-slate-200">Re-running audit...</p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Querying Groq · {defaultModel}</p>
+                  <p className="text-[0.6875rem] text-slate-500 dark:text-slate-400">Querying Groq · {defaultModel}</p>
                 </div>
               </div>
             </div>
@@ -451,7 +511,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
             {/* Integrity Score */}
             <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow flex flex-col">
               <div className="flex items-start justify-between">
-                <span className="pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Integrity Score</span>
+                <span className="pt-1 text-[0.625rem] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Integrity Score</span>
                 <span className={`p-2 rounded-xl ${report.score >= 75 ? 'bg-emerald-500/10 text-emerald-500' : report.score >= 60 ? 'bg-amber-500/10 text-amber-500' : 'bg-red-500/10 text-red-500'}`}>
                   <Gauge className="w-4 h-4" />
                 </span>
@@ -473,7 +533,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
             {/* Audit Grade */}
             <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow flex flex-col">
               <div className="flex items-start justify-between">
-                <span className="pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Audit Grade</span>
+                <span className="pt-1 text-[0.625rem] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Audit Grade</span>
                 <span className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
                   <Award className="w-4 h-4" />
                 </span>
@@ -481,13 +541,13 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
               <div className="mt-3 flex-1 flex items-center">
                 <span className="data-mono text-3xl font-bold tracking-tight leading-none text-amber-600 dark:text-amber-400">{report.grade}</span>
               </div>
-              <p className="mt-auto pt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">A+ – F scale</p>
+              <p className="mt-auto pt-3 text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400">A+ – F scale</p>
             </div>
 
             {/* Compliance */}
             <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow flex flex-col">
               <div className="flex items-start justify-between">
-                <span className="pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Compliance Rating</span>
+                <span className="pt-1 text-[0.625rem] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Compliance Rating</span>
                 <span className="p-2 rounded-xl bg-sky-500/10 text-sky-500">
                   <ShieldCheck className="w-4 h-4" />
                 </span>
@@ -509,7 +569,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
             {/* Risk */}
             <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow flex flex-col">
               <div className="flex items-start justify-between">
-                <span className="pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Risk Level</span>
+                <span className="pt-1 text-[0.625rem] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Risk Level</span>
                 <span className="p-2 rounded-xl bg-red-500/10 text-red-500">
                   <AlertTriangle className="w-4 h-4" />
                 </span>
@@ -517,7 +577,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
               <div className="mt-3 flex-1 flex items-center">
                 <span className="data-mono text-3xl font-bold tracking-tight leading-none text-red-600 dark:text-red-400 capitalize">{riskWord}</span>
               </div>
-              <p className="mt-auto pt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Low · Medium · High</p>
+              <p className="mt-auto pt-3 text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400">Low · Medium · High</p>
             </div>
           </div>
 
@@ -527,7 +587,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
               <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4" /> Executive Audit Summary
               </span>
-              <span className="text-[11px] font-mono text-slate-400">
+              <span className="text-[0.6875rem] font-mono text-slate-400">
                 Generated at {report.timestamp} · {report.source === 'groq' ? 'Groq API' : 'offline fallback'}
               </span>
             </div>
@@ -569,7 +629,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
                     }`}>
                       {deviceIconByType[d.type] || <Laptop className="w-5 h-5" />}
                     </div>
-                    <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border ${deviceStatusStyle(d.status)}`}>
+                    <span className={`inline-flex items-center gap-1.5 text-[0.625rem] font-bold px-2 py-0.5 rounded-full border ${deviceStatusStyle(d.status)}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${statusDot(d.status)}`} />
                       {d.isCurrent ? 'Active now' : d.status.replace('-', ' ')}
                     </span>
@@ -579,28 +639,28 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
                     <p className="font-display font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                       {d.name}
                       {d.isCurrent && (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-500 uppercase tracking-wider">
+                        <span className="text-[0.5625rem] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-500 uppercase tracking-wider">
                           this device
                         </span>
                       )}
                     </p>
                     <div className="mt-1.5 flex items-center gap-1.5">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${osBadgeClass(d.os)}`}>
+                      <span className={`text-[0.625rem] font-semibold px-2 py-0.5 rounded-md border ${osBadgeClass(d.os)}`}>
                         {DEVICE_LABELS[d.os] || d.os}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                      <span className="text-[0.625rem] font-mono text-slate-500 dark:text-slate-400">
                         {d.browser}
                       </span>
                     </div>
-                    <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">{d.detail}</p>
+                    <p className="mt-2 text-[0.6875rem] text-slate-500 dark:text-slate-400 leading-relaxed">{d.detail}</p>
                   </div>
 
                   <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400">
+                    <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium text-slate-400">
                       <Clock className="w-3 h-3" />
                       {timeAgo(d.lastSeen)}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">{d.ipHint}</span>
+                    <span className="text-[0.625rem] font-mono text-slate-400">{d.ipHint}</span>
                   </div>
                 </div>
               ))}
@@ -624,11 +684,11 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
                         {SECTION_ICONS[s.key] || <Info className="w-4 h-4" />}
                         {s.title}
                       </span>
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${styles.badge}`}>
+                      <span className={`text-[0.625rem] font-bold uppercase px-2 py-0.5 rounded-full border ${styles.badge}`}>
                         {s.status}
                       </span>
                     </div>
-                    <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-2 leading-snug">{s.metric}</p>
+                    <p className="text-[0.6875rem] font-mono text-slate-500 dark:text-slate-400 mb-2 leading-snug">{s.metric}</p>
                     <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed flex-1">{s.summary}</p>
                   </div>
                 );
@@ -666,7 +726,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
                     <div className="space-y-1">
                       <span className="font-extrabold block">{f.title}</span>
                       <span className="block">{f.detail}</span>
-                      <span className="block text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                      <span className="block text-[0.6875rem] font-bold text-slate-500 dark:text-slate-400">
                         → {f.recommendation}
                       </span>
                     </div>
@@ -703,7 +763,7 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
         {/* Ask the AI — kept as a sticky sidebar so it stays in view below the pinned
             banner, without scrolling to the bottom of the audit report (stacks below
             on mobile/tablet). */}
-        <div className="lg:sticky lg:top-[118px] min-w-0">
+        <div className="lg:sticky lg:top-[7.375rem] min-w-0">
           <AIChatPanel files={files} totalFolders={totalFolders} />
         </div>
       </div>

@@ -18,7 +18,7 @@ interface SidebarProps {
   activeTab: TabId;
   onSelectTab: (tab: TabId) => void;
   onNavigate?: () => void;
-  isCollapsed?: boolean;
+  sidebarWidth?: number;
   onToggleCollapse?: () => void;
   totalFiles: number;
   duplicateCount: number;
@@ -29,12 +29,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
   onNavigate,
-  isCollapsed = false,
+  sidebarWidth = 256,
   onToggleCollapse,
   totalFiles,
   duplicateCount,
   photoCount,
 }) => {
+  const isCollapsed = sidebarWidth <= 90;
   const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string }>; badge?: string | number; badgeColor?: string }[] = [
     {
       id: 'dashboard',
@@ -83,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <div className="flex flex-col justify-between p-3 h-full min-h-0">
       <div className="space-y-1 overflow-y-auto overscroll-contain min-h-0 thin-scrollbar">
         {!isCollapsed && (
-          <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 whitespace-nowrap">
+          <div className="px-3 py-1.5 text-[0.625rem] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 whitespace-nowrap">
             Navigation Menu
           </div>
         )}
@@ -115,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {!isCollapsed && item.badge !== undefined && (
                 <span
-                  className={`px-2 py-0.5 text-[10px] rounded-full border ${
+                  className={`px-2 py-0.5 text-[0.625rem] rounded-full border ${
                     item.badgeColor ||
                     (isActive
                       ? 'bg-emerald-500 text-slate-950 font-bold border-transparent'
@@ -133,12 +134,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Footer Info Box & Collapse Toggle */}
       <div className="mt-2 space-y-2 shrink-0">
         {!isCollapsed && (
-          <div className="p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800/80 text-[11px] space-y-0.5 text-slate-500 dark:text-slate-400">
+          <div className="p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800/80 text-[0.6875rem] space-y-0.5 text-slate-500 dark:text-slate-400">
             <div className="flex items-center space-x-1.5 font-semibold text-slate-700 dark:text-slate-300">
               <FileText className="w-3.5 h-3.5 text-emerald-500" />
               <span>Non-Modifying Index</span>
             </div>
-            <p className="leading-tight text-[10px]">
+            <p className="leading-tight text-[0.625rem]">
               Files remain untouched on original storage device.
             </p>
           </div>

@@ -14,8 +14,8 @@ export const USBOverview: React.FC<USBOverviewProps> = ({ volumeInfo, files, onR
       <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
         <HardDrive className="w-12 h-12 text-slate-400 mx-auto mb-3" />
         <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">No USB Storage Connected</h3>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-          Connect a USB Flash Drive or click "Load Demo USB Dataset" to inspect volume health metrics.
+        <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+          The <span className="font-bold text-slate-700 dark:text-slate-300">USB Overview</span> shows your drive's health metrics — name, filesystem type, serial number, read speed, and a storage capacity gauge with used/free breakdown. It also displays a 4-card stats grid covering total files, directories, documents, and duplicates. Connect a USB Flash Drive or click "Load Demo USB Dataset" to inspect volume health metrics.
         </p>
       </div>
     );
@@ -43,7 +43,7 @@ export const USBOverview: React.FC<USBOverviewProps> = ({ volumeInfo, files, onR
               <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 min-w-0 break-words">
                 {volumeInfo.name}
               </h1>
-              <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono">
+              <span className="px-2 py-0.5 text-[0.625rem] font-bold rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono">
                 {volumeInfo.filesystem}
               </span>
             </div>
@@ -75,14 +75,14 @@ export const USBOverview: React.FC<USBOverviewProps> = ({ volumeInfo, files, onR
         </div>
 
         {volumeInfo.capacityEstimated === true ? (
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
+          <p className="text-[0.6875rem] text-slate-400 dark:text-slate-500 leading-relaxed">
             Live storage capacity is unavailable for this connection. No capacity figures are shown —
             only file and folder statistics are reported.
           </p>
         ) : (
           <>
             {volumeInfo.name && (
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono flex items-center gap-2">
+              <p className="text-[0.625rem] text-slate-400 dark:text-slate-500 font-mono flex items-center gap-2">
                 <span>{volumeInfo.name}</span>
                 {volumeInfo.filesystem && (
                   <>
@@ -100,7 +100,7 @@ export const USBOverview: React.FC<USBOverviewProps> = ({ volumeInfo, files, onR
               />
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-slate-500">
+            <div className="flex items-center justify-between text-[0.6875rem] text-slate-500">
               <span>0 GB</span>
               <span>{percentUsed}% Occupied Space</span>
               <span>{totalGB} GB</span>

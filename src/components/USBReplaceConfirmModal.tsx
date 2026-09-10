@@ -73,7 +73,7 @@ export const USBReplaceConfirmModal: React.FC<USBReplaceConfirmModalProps> = ({
 
           <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <p className="text-[11px] leading-relaxed text-amber-200/90">
+            <p className="text-[0.6875rem] leading-relaxed text-amber-200/90">
               If you are still working with the current drive, choose "No" to keep everything as it is.
             </p>
           </div>

@@ -1,22 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ScannedFile, QuarterId, MonthName, FileCategory } from '../types';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
-  RadialBarChart,
-  RadialBar,
-  Legend,
-  CartesianGrid,
-} from 'recharts';
+import { BarChart } from '@mui/x-charts/BarChart';
+import { PieChart } from '@mui/x-charts/PieChart';
+import { LineChart } from '@mui/x-charts/LineChart';
+import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge';
 import {
   BarChart3,
   PieChart as PieIcon,
@@ -26,7 +13,6 @@ import {
   Database,
   Layers,
   Copy,
-  Flame,
   FileText,
   Lightbulb,
   FolderTree,
@@ -58,15 +44,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   Other: '#94A3B8',
 };
 
-const PALETTE = ['#10B981', '#06B6D4', '#F59E0B', '#6366F1', '#EC4899', '#8B5CF6', '#14B8A6', '#F43F5E'];
+const MONO_FONT = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
 
-const TOOLTIP_STYLE = {
-  backgroundColor: '#0f172a',
-  borderColor: '#334155',
-  borderRadius: '12px',
-  fontSize: '12px',
-  color: '#fff',
-};
+const AXIS_TICK_STYLE = { fontSize: 11, fill: '#ffffff' } as const;
 
 const ALL_CATEGORIES: FileCategory[] = [
   'Documents', 'Images', 'Videos', 'Audio', 'Archives', 'Folders', 'Executables', 'Other',
@@ -77,8 +57,26 @@ const emptyMonthMap = (): Record<MonthName, number> => ({
   January: 0, February: 0, March: 0, April: 0, May: 0, June: 0,
 });
 
+function useIsDarkMode(): boolean {
+  const [isDark, setIsDark] = useState(
+    () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+  );
+
+  useEffect(() => {
+    const el = document.documentElement;
+    const update = () => setIsDark(el.classList.contains('dark'));
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+}
+
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
   const [metric, setMetric] = useState<MetricKey>('count');
+  const isDark = useIsDarkMode();
 
   const stats = useMemo(() => {
     const quarterData = [
@@ -236,7 +234,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
   const toggleBtn = (key: MetricKey, label: string) => (
     <button
       onClick={() => setMetric(key)}
-      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
+      className={`px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-colors ${
         metric === key
           ? 'bg-emerald-500 text-white'
           : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
@@ -246,10 +244,50 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
     </button>
   );
 
-  // Duplicate gauge data for RadialBarChart
-  const dupData = [
-    { name: 'Duplicates', value: Math.min(100, stats.duplicateRate || 0), fill: stats.duplicateRate > 15 ? '#F43F5E' : stats.duplicateRate > 5 ? '#F59E0B' : '#10B981' },
-  ];
+  const dupColor = stats.duplicateRate > 15 ? '#F43F5E' : stats.duplicateRate > 5 ? '#F59E0B' : '#10B981';
+  const dupValue = Math.min(100, stats.duplicateRate);
+
+  const chartTheme = isDark ? 'dark' : 'light';
+
+  const fmt = (v: number | null) => {
+    if (v == null) return '';
+    return metric === 'count'
+      ? `${Math.round(v).toLocaleString()}`
+      : `${Number(v).toFixed(1)} MB`;
+  };
+
+  const pieTotal = stats.categoryData.reduce((s, d) => s + (metric === 'count' ? d.count : d.sizeMB), 0);
+  const pieData = stats.categoryData.map((d, i) => ({
+    id: d.name,
+    label: d.name,
+    value: metric === 'count' ? d.count : d.sizeMB,
+    color: CATEGORY_COLORS[d.name] || undefined,
+  }));
+
+  if (files.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div>
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-emerald-500" />
+              Repository Analytics & Financial Quarter Trends
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Volume, storage footprint, category splits, duplicates, folder economics, and timeline metrics
+            </p>
+          </div>
+        </div>
+        <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <BarChart3 className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+          <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">No Analytics Available Yet</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+            The <span className="font-bold text-slate-700 dark:text-slate-300">Analytics</span> tab provides KPI cards, quarterly volume bar charts, category pie charts, duplicate rate gauges, a 12-month ingestion timeline, top folder rankings, and key insights — all generated from your scanned repository. Connect a USB drive or load the demo dataset to see your analytics.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -276,7 +314,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
                 <Icon className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{k.label}</p>
+                <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">{k.label}</p>
                 <p className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono leading-tight">{k.value}</p>
               </div>
             </div>
@@ -302,19 +340,23 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
               <BarChart3 className="w-4 h-4 text-emerald-500" />
               Quarterly Volume
             </h3>
-            <span className="text-[10px] font-bold uppercase text-slate-400">{metric === 'count' ? 'File Count' : 'Storage / Quarter'}</span>
+            <span className="text-[0.625rem] font-bold uppercase text-slate-400">{metric === 'count' ? 'File Count' : 'Storage / Quarter'}</span>
           </div>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.quarterData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" strokeOpacity={0.15} vertical={false} />
-                <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} />
-                <YAxis stroke="#888888" fontSize={11} tickLine={false} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
-                <Bar dataKey={metric === 'count' ? 'files' : 'sizeMB'} fill="#10B981" radius={[8, 8, 0, 0]} name={metric === 'count' ? 'Scanned Files' : 'Size (MB)'} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <BarChart
+            height={256}
+            dataset={stats.quarterData}
+            xAxis={[{ scaleType: 'band', dataKey: 'name', tickLabelStyle: AXIS_TICK_STYLE }]}
+            yAxis={[{ tickLabelStyle: AXIS_TICK_STYLE }]}
+            grid={{ horizontal: true }}
+            borderRadius={8}
+            series={[{
+              dataKey: metric === 'count' ? 'files' : 'sizeMB',
+              label: metric === 'count' ? 'Scanned Files' : 'Size (MB)',
+              color: '#10B981',
+              valueFormatter: fmt,
+            }]}
+            theme={chartTheme}
+          />
         </div>
 
         <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
@@ -323,30 +365,25 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
               <PieIcon className="w-4 h-4 text-cyan-500" />
               Category Breakdown
             </h3>
-            <span className="text-[10px] font-bold uppercase text-slate-400">{metric === 'count' ? 'File Type Count' : 'Storage Footprint'}</span>
+            <span className="text-[0.625rem] font-bold uppercase text-slate-400">{metric === 'count' ? 'File Type Count' : 'Storage Footprint'}</span>
           </div>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={stats.categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={85}
-                  paddingAngle={4}
-                  dataKey={metric === 'count' ? 'count' : 'sizeMB'}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  labelLine={false}
-                >
-                  {stats.categoryData.map((entry, idx) => (
-                    <Cell key={`cell-${idx}`} fill={CATEGORY_COLORS[entry.name] || PALETTE[idx % PALETTE.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+          <PieChart
+            height={256}
+            margin={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            series={[{
+              data: pieData,
+              innerRadius: 55,
+              outerRadius: 85,
+              paddingAngle: 4,
+              cornerRadius: 6,
+              cx: '50%',
+              cy: '50%',
+              valueFormatter: (item) => fmt(item.value),
+              arcLabel: (item) => (pieTotal > 0 ? `${((item.value / pieTotal) * 100).toFixed(0)}%` : ''),
+              arcLabelMinAngle: 8,
+            }]}
+            theme={chartTheme}
+          />
         </div>
       </div>
 
@@ -358,22 +395,33 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
               <Layers className="w-4 h-4 text-indigo-500" />
               Category Mix per Quarter (Stacked)
             </h3>
-            <span className="text-[10px] font-bold uppercase text-slate-400">{metric === 'count' ? 'Files by Category' : 'Size by Category'}</span>
+            <span className="text-[0.625rem] font-bold uppercase text-slate-400">{metric === 'count' ? 'Files by Category' : 'Size by Category'}</span>
           </div>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={metric === 'count' ? stats.stackedCountData : stats.stackedData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" strokeOpacity={0.15} vertical={false} />
-                <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} />
-                <YAxis stroke="#888888" fontSize={11} tickLine={false} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
-                {ALL_CATEGORIES.map((c) => (
-                  <Bar key={c} dataKey={c} stackId="a" fill={CATEGORY_COLORS[c]} name={c} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <BarChart
+            height={256}
+            dataset={metric === 'count' ? stats.stackedCountData : stats.stackedData}
+            xAxis={[{ scaleType: 'band', dataKey: 'name', tickLabelStyle: AXIS_TICK_STYLE }]}
+            yAxis={[{ tickLabelStyle: AXIS_TICK_STYLE }]}
+            grid={{ horizontal: true }}
+            series={ALL_CATEGORIES.map((c) => ({
+              dataKey: c,
+              label: c,
+              color: CATEGORY_COLORS[c],
+              stack: 'total',
+              stackOffset: 'none',
+              valueFormatter: fmt,
+            }))}
+            slotProps={{
+              legend: {
+                position: { vertical: 'bottom', horizontal: 'center' },
+                sx: {
+                  '& .MuiChartsLegend-label': { fontSize: 10 },
+                },
+              },
+            }}
+            margin={{ top: 5, bottom: 40, left: 5, right: 5 }}
+            theme={chartTheme}
+          />
         </div>
 
         <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
@@ -382,24 +430,34 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
               <Percent className="w-4 h-4 text-amber-500" />
               Duplicate Rate
             </h3>
-            <span className="text-[10px] font-bold uppercase text-slate-400">Index Hygiene</span>
+            <span className="text-[0.625rem] font-bold uppercase text-slate-400">Index Hygiene</span>
           </div>
-          <div className="h-40 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadialBarChart innerRadius="70%" outerRadius="100%" data={dupData} startAngle={90} endAngle={-270}>
-                <RadialBar background dataKey="value" cornerRadius={10} fill={dupData[0].fill} />
-                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="font-mono" style={{ fill: '#f8fafc', fontSize: 22, fontWeight: 800 }}>
-                  {stats.duplicateRate.toFixed(1)}%
-                </text>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
-              </RadialBarChart>
-            </ResponsiveContainer>
-          </div>
+          <Gauge
+            height={176}
+            value={dupValue}
+            startAngle={-110}
+            endAngle={110}
+            innerRadius="70%"
+            outerRadius="100%"
+            cornerRadius="50%"
+            text={() => `${stats.duplicateRate.toFixed(1)}%`}
+            sx={{
+              width: '100%',
+              [`& .${gaugeClasses.valueArc}`]: { fill: dupColor },
+              [`& .${gaugeClasses.referenceArc}`]: { fill: isDark ? '#1e293b' : '#e2e8f0' },
+              [`& .${gaugeClasses.valueText}`]: {
+                fontFamily: MONO_FONT,
+                fontSize: '1.375rem',
+                fontWeight: 800,
+                fill: isDark ? '#f8fafc' : '#0f172a',
+              },
+            }}
+          />
           <div className="text-center">
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-[0.6875rem] text-slate-500 dark:text-slate-400">
               <span className="font-bold text-amber-500">{stats.dupFiles.toLocaleString()}</span> duplicate copies
             </p>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-[0.6875rem] text-slate-500 dark:text-slate-400">
               ~<span className="font-bold text-amber-500">{formatSize(stats.dupBytes)}</span> reclaimable
             </p>
           </div>
@@ -414,26 +472,24 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
               <TrendingUp className="w-4 h-4 text-amber-500" />
               12-Month Ingestion Timeline
             </h3>
-            <span className="text-[10px] font-bold uppercase text-slate-400">Monthly {metric === 'count' ? 'Volume' : 'Size (MB)'}</span>
+            <span className="text-[0.625rem] font-bold uppercase text-slate-400">Monthly {metric === 'count' ? 'Volume' : 'Size (MB)'}</span>
           </div>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stats.monthlyTimelineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" strokeOpacity={0.15} vertical={false} />
-                <XAxis dataKey="month" stroke="#888888" fontSize={11} tickLine={false} />
-                <YAxis stroke="#888888" fontSize={11} tickLine={false} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
-                <Area
-                  type="monotone"
-                  dataKey={metric === 'count' ? 'files' : 'sizeMB'}
-                  stroke="#F59E0B"
-                  fill="#F59E0B20"
-                  strokeWidth={2}
-                  name={metric === 'count' ? 'Monthly Files' : 'Size (MB)'}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <LineChart
+            height={256}
+            dataset={stats.monthlyTimelineData}
+            xAxis={[{ scaleType: 'point', dataKey: 'month', tickLabelStyle: AXIS_TICK_STYLE }]}
+            yAxis={[{ tickLabelStyle: AXIS_TICK_STYLE }]}
+            grid={{ horizontal: true }}
+            series={[{
+              dataKey: metric === 'count' ? 'files' : 'sizeMB',
+              label: metric === 'count' ? 'Monthly Files' : 'Size (MB)',
+              color: '#F59E0B',
+              area: true,
+              showMark: true,
+              valueFormatter: fmt,
+            }]}
+            theme={chartTheme}
+          />
         </div>
 
         <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
@@ -442,34 +498,34 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
               <FolderTree className="w-4 h-4 text-purple-500" />
               Top Folders by {metric === 'count' ? 'Files' : 'Storage'}
             </h3>
-            <span className="text-[10px] font-bold uppercase text-slate-400">Top 6</span>
+            <span className="text-[0.625rem] font-bold uppercase text-slate-400">Top 6</span>
           </div>
-          <div className="space-y-2.5">
-            {stats.folders.map((d, idx) => {
-              const max = stats.folders[0][metric];
-              const val = metric === 'count' ? d.count : d.sizeMB;
-              const pct = max > 0 ? (val / max) * 100 : 0;
-              return (
-                <div key={d.name} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-300 flex items-center gap-2 truncate">
-                      <span className="font-mono text-slate-500">#{idx + 1}</span>
-                      <span className="truncate">{d.name}</span>
-                    </span>
-                    <span className="font-mono text-slate-300 shrink-0">
-                      {metric === 'count' ? d.count.toLocaleString() : `${d.sizeMB.toFixed(1)} MB`}
-                    </span>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-400" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-            {stats.folders.length === 0 && (
-              <p className="text-xs text-slate-400 text-center py-6">No folders indexed yet.</p>
-            )}
-          </div>
+          {stats.folders.length > 0 ? (
+            <BarChart
+              height={256}
+              layout="horizontal"
+              dataset={stats.folders}
+              borderRadius={6}
+              yAxis={[{
+                scaleType: 'band',
+                dataKey: 'name',
+                categoryGapRatio: 0.4,
+                tickLabelStyle: { fontSize: 10, fill: '#ffffff' },
+              }]}
+              xAxis={[{ scaleType: 'linear', tickLabelStyle: AXIS_TICK_STYLE }]}
+              grid={{ vertical: true }}
+              hideLegend
+              series={[{
+                dataKey: metric === 'count' ? 'count' : 'sizeMB',
+                label: metric === 'count' ? 'Files' : 'Size (MB)',
+                color: '#8B5CF6',
+                valueFormatter: fmt,
+              }]}
+              theme={chartTheme}
+            />
+          ) : (
+            <p className="text-xs text-slate-400 text-center py-6">No folders indexed yet.</p>
+          )}
         </div>
       </div>
 
@@ -504,7 +560,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
                 <span className="font-bold text-slate-800 dark:text-slate-200 truncate">{f.name}</span>
               </div>
               <div className="flex items-center space-x-3 font-mono shrink-0">
-                <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[0.625rem] font-bold">
                   {f.classification.quarter}
                 </span>
                 <span className="font-bold text-slate-700 dark:text-slate-300">{(f.size / (1024 * 1024)).toFixed(1)} MB</span>

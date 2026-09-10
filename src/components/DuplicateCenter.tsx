@@ -70,7 +70,7 @@ export const DuplicateCenter: React.FC<DuplicateCenterProps> = ({ files, onPrevi
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-right shrink-0">
-          <span className="text-[10px] font-bold uppercase text-slate-400 block">
+          <span className="text-[0.625rem] font-bold uppercase text-slate-400 block">
             Potential Storage Reclaimed
           </span>
           <span className="text-xl font-black text-amber-500 font-mono">
@@ -84,8 +84,8 @@ export const DuplicateCenter: React.FC<DuplicateCenterProps> = ({ files, onPrevi
         <div className="p-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
           <ShieldCheck className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
           <h3 className="font-extrabold text-slate-800 dark:text-slate-200 text-sm">No Duplicate Files Detected</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-            All scanned documents have unique SHA-256 cryptographic signatures. No redundant copies found!
+          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+            The <span className="font-bold text-slate-700 dark:text-slate-300">Duplicate Center</span> groups files by SHA-256 hash to find exact cryptographic matches, displays side-by-side comparisons, and calculates potential storage savings from removing redundant copies. All scanned documents currently have unique signatures — no duplicates found!
           </p>
         </div>
       ) : (
@@ -96,7 +96,7 @@ export const DuplicateCenter: React.FC<DuplicateCenterProps> = ({ files, onPrevi
               Duplicate Clusters ({duplicateGroups.length})
             </h3>
 
-            <div className="space-y-2 max-h-[600px] overflow-y-auto overscroll-contain thin-scrollbar pr-1">
+            <div className="space-y-2 max-h-[37.5rem] overflow-y-auto overscroll-contain thin-scrollbar pr-1">
               {duplicateGroups.map((group) => {
                 const isSelected = activeGroup?.hash === group.hash;
 
@@ -111,19 +111,19 @@ export const DuplicateCenter: React.FC<DuplicateCenterProps> = ({ files, onPrevi
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate max-w-[180px]">
+                      <span className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate max-w-[11.25rem]">
                         {group.files[0].name}
                       </span>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-mono">
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-mono">
                         {group.files.length} Copies
                       </span>
                     </div>
 
-                    <p className="text-[10px] text-slate-400 font-mono truncate mb-2">
+                    <p className="text-[0.625rem] text-slate-400 font-mono truncate mb-2">
                       SHA256: {group.hash.slice(0, 16)}...
                     </p>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                    <div className="flex items-center justify-between text-[0.6875rem] text-slate-500 font-mono">
                       <span>Size: {formatSize(group.files[0].size)}</span>
                       <span className="font-bold text-amber-600 dark:text-amber-400">
                         Savings: {formatSize(group.potentialSavingsBytes)}
@@ -170,13 +170,13 @@ export const DuplicateCenter: React.FC<DuplicateCenterProps> = ({ files, onPrevi
                               {file.name}
                             </span>
                             {idx === 0 && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950">
+                              <span className="text-[0.5625rem] font-bold px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950">
                                 Original (Kept)
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] font-mono text-slate-400 mt-0.5 break-words">{file.path}</p>
-                          <p className="text-[10px] text-slate-500 mt-1">
+                          <p className="text-[0.6875rem] font-mono text-slate-400 mt-0.5 break-words">{file.path}</p>
+                          <p className="text-[0.625rem] text-slate-500 mt-1">
                             Quarter: {file.classification.quarter} ({file.classification.month}) • Modified: {file.modifiedDate.toISOString().split('T')[0]}
                           </p>
                         </div>

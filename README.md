@@ -278,6 +278,7 @@ Serialization notes worth knowing:
 - **Landing vs app**: `scannedFiles.length === 0` renders `<LandingPage>` (connect / demo / OCR toggle); otherwise the full shell (Navbar + Sidebar + views). "Go home" clears files *and* IndexedDB (`clearScannedIndexFromDB`).
 - **Navigation**: 7 views switch on `activeTab` (see sidebar), filters are *derived* — the Folder Explorer receives `filterOptions` and recomputes; the Question of duplicate/photos counts is badge metadata passed into `<Sidebar>`.
 - **Preview & command palette**: file preview is a modal bound to `previewFile`; `<CommandPalette>` (Ctrl/Cmd+K) navigates tabs/quarters and opens files by fuzzy search.
+- **Browser font-size scaling**: All text uses `rem` units (base: body `0.875rem` = 14px) so the UI scales when users change their browser's default font size. Hardcoded `px` font sizes were converted across ~25 component files, CSS strings, and inline styles. Fixed-layout constants (`PAGE_W`/`PAGE_H` for page simulation, canvas `fontSize` for the Matrix rain, `IntersectionObserver` rootMargin) intentionally remain in `px` as they are not font-related.
 
 ---
 
@@ -381,3 +382,4 @@ Other scripts: `npm run preview` (Vite preview), `npm run clean`.
 - AI quality depends on the Gemini model + key; synthetic fallback is deterministic, not generative.
 - OCR dynamically loads ~4 MB of Tesseract and slows scans — intended to be opt-in.
 - Persisted scans drop their `handle`s, so re-hashing/re-reading requires a fresh scan.
+- Font-size scaling is fully supported via `rem` units; at very large browser font sizes (>120%), some dense data tables and tight stat cards may wrap or require scrolling.

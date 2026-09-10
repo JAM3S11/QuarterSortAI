@@ -74,7 +74,7 @@ export const TextRenderer: FC<ViewerRenderProps> = (props) => {
           pageEl.className = 'qso-text-page';
           pageEl.style.width = `${PAGE_W}px`;
           pageEl.style.minHeight = `${PAGE_H}px`;
-          pageEl.style.marginBottom = '28px';
+          pageEl.style.marginBottom = '1.75rem';
           const pre = document.createElement('pre');
           pre.className = 'qso-text-pre';
           pre.textContent = pages[i].join('\n');
@@ -157,7 +157,7 @@ export const TextRenderer: FC<ViewerRenderProps> = (props) => {
     <div className="relative flex-1 overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 overflow-y-auto overflow-x-hidden" />
       {truncated && !loading && (
-        <div className="absolute bottom-0 inset-x-0 z-10 px-4 py-2 bg-amber-50 dark:bg-amber-950/60 border-t border-amber-200 dark:border-amber-900 text-[11px] text-amber-700 dark:text-amber-300">
+        <div className="absolute bottom-0 inset-x-0 z-10 px-4 py-2 bg-amber-50 dark:bg-amber-950/60 border-t border-amber-200 dark:border-amber-900 text-[0.6875rem] text-amber-700 dark:text-amber-300">
           This file is {formatSize(props.file.size)} — the preview shows only the first ~{MAX_PREVIEW_BYTES / (1024 * 1024)}MB to keep things fast. Download the file to view everything.
         </div>
       )}
