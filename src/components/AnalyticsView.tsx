@@ -1,9 +1,25 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ScannedFile, QuarterId, MonthName, FileCategory } from '../types';
-import { BarChart } from '@mui/x-charts/BarChart';
-import { PieChart } from '@mui/x-charts/PieChart';
-import { LineChart } from '@mui/x-charts/LineChart';
-import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Label,
+  Pie,
+  PieChart as RePieChart,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  RadialBar,
+  RadialBarChart,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import {
   BarChart3,
   PieChart as PieIcon,
@@ -18,7 +34,24 @@ import {
   FolderTree,
   Activity,
   Percent,
+  Radar as RadarIcon,
 } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
 import { formatSize } from '../lib/format';
 
 interface AnalyticsViewProps {
@@ -44,10 +77,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   Other: '#94A3B8',
 };
 
-const MONO_FONT = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
-
-const AXIS_TICK_STYLE = { fontSize: 11, fill: '#ffffff' } as const;
-
 const ALL_CATEGORIES: FileCategory[] = [
   'Documents', 'Images', 'Videos', 'Audio', 'Archives', 'Folders', 'Executables', 'Other',
 ];
@@ -57,26 +86,9 @@ const emptyMonthMap = (): Record<MonthName, number> => ({
   January: 0, February: 0, March: 0, April: 0, May: 0, June: 0,
 });
 
-function useIsDarkMode(): boolean {
-  const [isDark, setIsDark] = useState(
-    () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
-  );
-
-  useEffect(() => {
-    const el = document.documentElement;
-    const update = () => setIsDark(el.classList.contains('dark'));
-    update();
-    const observer = new MutationObserver(update);
-    observer.observe(el, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-
-  return isDark;
-}
-
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
   const [metric, setMetric] = useState<MetricKey>('count');
-  const isDark = useIsDarkMode();
+  const isCount = metric === 'count';
 
   const stats = useMemo(() => {
     const quarterData = [
@@ -89,7 +101,6 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
     const monthCountMap = emptyMonthMap();
     const monthSizeMap: Record<MonthName, number> = { ...emptyMonthMap() } as Record<MonthName, number>;
     const folderMap: Record<string, { count: number; sizeBytes: number }> = {};
-    const hashMap = new Map<string, number>();
 
     let totalBytes = 0;
     let dupFiles = 0;
@@ -194,7 +205,6 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
       monthlyTimelineData,
       stackedData,
       stackedCountData,
-      qc,
       folders,
       busiestQuarter: quarterData[busiestQuarterIdx].name,
       busiestMonth,
@@ -244,25 +254,57 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
     </button>
   );
 
+  // ---- chart configs (labels + colors consumed by tooltips/legends) ----
+  const volumeConfig = {
+    files: { label: 'Scanned Files', color: 'var(--chart-1)' },
+    sizeMB: { label: 'Size (MB)', color: 'var(--chart-1)' },
+  } satisfies ChartConfig;
+
+  const pieConfig = Object.fromEntries(
+    stats.categoryData.map((d) => [d.name, { label: d.name, color: CATEGORY_COLORS[d.name] }]),
+  ) satisfies ChartConfig;
+
+  const stackedConfig = Object.fromEntries(
+    ALL_CATEGORIES.map((c) => [c, { label: c, color: CATEGORY_COLORS[c] }]),
+  ) satisfies ChartConfig;
+
+  const timelineConfig = {
+    files: { label: 'Monthly Files', color: 'var(--chart-3)' },
+    sizeMB: { label: 'Size (MB)', color: 'var(--chart-3)' },
+  } satisfies ChartConfig;
+
+  const radarConfig = {
+    countPct: { label: 'Files (%)', color: 'var(--chart-1)' },
+    sizePct: { label: 'Storage (%)', color: 'var(--chart-5)' },
+  } satisfies ChartConfig;
+
+  const folderConfig = {
+    count: { label: 'Files', color: 'var(--chart-4)' },
+    sizeMB: { label: 'Size (MB)', color: 'var(--chart-4)' },
+  } satisfies ChartConfig;
+
+  const radialConfig = {
+    value: { label: 'Duplicate rate' },
+  } satisfies ChartConfig;
+
+  // ---- derived data ----
+  const metricKey = isCount ? 'files' : 'sizeMB';
+  const folderMetricKey = isCount ? 'count' : 'sizeMB';
+
+  const pieData = stats.categoryData.map((d) => ({
+    name: d.name,
+    value: isCount ? d.count : d.sizeMB,
+  }));
+
+  const radarData = stats.categoryData.map((d) => ({
+    category: d.name,
+    countPct: stats.totalFiles ? Number(((d.count / stats.totalFiles) * 100).toFixed(1)) : 0,
+    sizePct: stats.totalBytes ? Number(((d.sizeMB / (stats.totalBytes / (1024 * 1024))) * 100).toFixed(1)) : 0,
+  }));
+
   const dupColor = stats.duplicateRate > 15 ? '#F43F5E' : stats.duplicateRate > 5 ? '#F59E0B' : '#10B981';
   const dupValue = Math.min(100, stats.duplicateRate);
-
-  const chartTheme = isDark ? 'dark' : 'light';
-
-  const fmt = (v: number | null) => {
-    if (v == null) return '';
-    return metric === 'count'
-      ? `${Math.round(v).toLocaleString()}`
-      : `${Number(v).toFixed(1)} MB`;
-  };
-
-  const pieTotal = stats.categoryData.reduce((s, d) => s + (metric === 'count' ? d.count : d.sizeMB), 0);
-  const pieData = stats.categoryData.map((d, i) => ({
-    id: d.name,
-    label: d.name,
-    value: metric === 'count' ? d.count : d.sizeMB,
-    color: CATEGORY_COLORS[d.name] || undefined,
-  }));
+  const totalStorageMB = (stats.totalBytes / (1024 * 1024)).toFixed(1);
 
   if (files.length === 0) {
     return (
@@ -332,201 +374,312 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
         </div>
       </div>
 
-      {/* Row: Quarterly + Category */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-emerald-500" />
-              Quarterly Volume
-            </h3>
-            <span className="text-[0.625rem] font-bold uppercase text-slate-400">{metric === 'count' ? 'File Count' : 'Storage / Quarter'}</span>
-          </div>
-          <BarChart
-            height={256}
-            dataset={stats.quarterData}
-            xAxis={[{ scaleType: 'band', dataKey: 'name', tickLabelStyle: AXIS_TICK_STYLE }]}
-            yAxis={[{ tickLabelStyle: AXIS_TICK_STYLE }]}
-            grid={{ horizontal: true }}
-            borderRadius={8}
-            series={[{
-              dataKey: metric === 'count' ? 'files' : 'sizeMB',
-              label: metric === 'count' ? 'Scanned Files' : 'Size (MB)',
-              color: '#10B981',
-              valueFormatter: fmt,
-            }]}
-            theme={chartTheme}
-          />
-        </div>
+      {/* Row 1: Quarterly Volume + Category Breakdown + Category Balance */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                <BarChart3 className="w-4 h-4 text-emerald-500" />
+                Quarterly Volume
+              </CardTitle>
+              <span className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground">
+                {isCount ? 'File Count' : 'Storage / Quarter'}
+              </span>
+            </div>
+            <CardDescription>Files indexed per financial quarter</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={volumeConfig} className="aspect-auto h-[256px] w-full">
+              <BarChart accessibilityLayer data={stats.quarterData}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  tickFormatter={(value) => value.slice(0, 2)}
+                />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                <Bar
+                  dataKey={metricKey}
+                  fill={`var(--color-${metricKey})`}
+                  radius={[6, 6, 0, 0]}
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
 
-        <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <PieIcon className="w-4 h-4 text-cyan-500" />
-              Category Breakdown
-            </h3>
-            <span className="text-[0.625rem] font-bold uppercase text-slate-400">{metric === 'count' ? 'File Type Count' : 'Storage Footprint'}</span>
-          </div>
-          <PieChart
-            height={256}
-            margin={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            series={[{
-              data: pieData,
-              innerRadius: 55,
-              outerRadius: 85,
-              paddingAngle: 4,
-              cornerRadius: 6,
-              cx: '50%',
-              cy: '50%',
-              valueFormatter: (item) => fmt(item.value),
-              arcLabel: (item) => (pieTotal > 0 ? `${((item.value / pieTotal) * 100).toFixed(0)}%` : ''),
-              arcLabelMinAngle: 8,
-            }]}
-            theme={chartTheme}
-          />
-        </div>
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                <PieIcon className="w-4 h-4 text-cyan-500" />
+                Category Breakdown
+              </CardTitle>
+              <span className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground">
+                {isCount ? 'File Type Count' : 'Storage Footprint'}
+              </span>
+            </div>
+            <CardDescription>Share of the repository by category</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="relative mx-auto aspect-square w-full max-w-[260px]">
+              <ChartContainer config={pieConfig} className="aspect-auto h-full w-full">
+                <RePieChart>
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                  <Pie
+                    data={pieData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={85}
+                    strokeWidth={2}
+                    stroke="var(--color-background)"
+                  >
+                    {pieData.map((entry) => (
+                      <Cell key={entry.name} fill={`var(--color-${entry.name})`} />
+                    ))}
+                  </Pie>
+                </RePieChart>
+              </ChartContainer>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-2xl font-extrabold text-foreground">
+                  {isCount ? stats.totalFiles.toLocaleString() : totalStorageMB}
+                </span>
+                <span className="text-xs text-muted-foreground">{isCount ? 'files' : 'MB'}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                <RadarIcon className="w-4 h-4 text-fuchsia-500" />
+                Category Balance
+              </CardTitle>
+              <span className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground">Count vs Size</span>
+            </div>
+            <CardDescription>Percent share of files vs storage per category</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={radarConfig} className="mx-auto aspect-square max-h-[256px] w-full">
+              <RadarChart accessibilityLayer data={radarData}>
+                <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                <PolarAngleAxis
+                  dataKey="category"
+                  tick={{ fontSize: 10, fill: 'var(--color-muted-foreground)' }}
+                />
+                <PolarGrid />
+                <Radar
+                  dataKey="countPct"
+                  stroke="var(--color-countPct)"
+                  fill="var(--color-countPct)"
+                  fillOpacity={0.5}
+                  dot={{ r: 3, fillOpacity: 1 }}
+                />
+                <Radar
+                  dataKey="sizePct"
+                  stroke="var(--color-sizePct)"
+                  fill="var(--color-sizePct)"
+                  fillOpacity={0.5}
+                  dot={{ r: 3, fillOpacity: 1 }}
+                />
+                <ChartLegend content={<ChartLegendContent />} />
+              </RadarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Row: Quarter x Category stacked + Duplicate gauge */}
+      {/* Row 2: Category Mix stacked + Duplicate gauge */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-indigo-500" />
-              Category Mix per Quarter (Stacked)
-            </h3>
-            <span className="text-[0.625rem] font-bold uppercase text-slate-400">{metric === 'count' ? 'Files by Category' : 'Size by Category'}</span>
-          </div>
-          <BarChart
-            height={256}
-            dataset={metric === 'count' ? stats.stackedCountData : stats.stackedData}
-            xAxis={[{ scaleType: 'band', dataKey: 'name', tickLabelStyle: AXIS_TICK_STYLE }]}
-            yAxis={[{ tickLabelStyle: AXIS_TICK_STYLE }]}
-            grid={{ horizontal: true }}
-            series={ALL_CATEGORIES.map((c) => ({
-              dataKey: c,
-              label: c,
-              color: CATEGORY_COLORS[c],
-              stack: 'total',
-              stackOffset: 'none',
-              valueFormatter: fmt,
-            }))}
-            slotProps={{
-              legend: {
-                position: { vertical: 'bottom', horizontal: 'center' },
-                sx: {
-                  '& .MuiChartsLegend-label': { fontSize: 10 },
-                },
-              },
-            }}
-            margin={{ top: 5, bottom: 40, left: 5, right: 5 }}
-            theme={chartTheme}
-          />
-        </div>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                <Layers className="w-4 h-4 text-indigo-500" />
+                Category Mix per Quarter (Stacked)
+              </CardTitle>
+              <span className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground">
+                {isCount ? 'Files by Category' : 'Size by Category'}
+              </span>
+            </div>
+            <CardDescription>Category composition across financial quarters</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={stackedConfig} className="aspect-auto h-[256px] w-full">
+              <BarChart
+                accessibilityLayer
+                data={isCount ? stats.stackedCountData : stats.stackedData}
+              >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  tickFormatter={(value) => value.slice(0, 2)}
+                />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                {ALL_CATEGORIES.map((c) => (
+                  <Bar key={c} dataKey={c} stackId="a" fill={`var(--color-${c})`} />
+                ))}
+                <ChartLegend content={<ChartLegendContent />} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
 
-        <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <Percent className="w-4 h-4 text-amber-500" />
-              Duplicate Rate
-            </h3>
-            <span className="text-[0.625rem] font-bold uppercase text-slate-400">Index Hygiene</span>
-          </div>
-          <Gauge
-            height={176}
-            value={dupValue}
-            startAngle={-110}
-            endAngle={110}
-            innerRadius="70%"
-            outerRadius="100%"
-            cornerRadius="50%"
-            text={() => `${stats.duplicateRate.toFixed(1)}%`}
-            sx={{
-              width: '100%',
-              [`& .${gaugeClasses.valueArc}`]: { fill: dupColor },
-              [`& .${gaugeClasses.referenceArc}`]: { fill: isDark ? '#1e293b' : '#e2e8f0' },
-              [`& .${gaugeClasses.valueText}`]: {
-                fontFamily: MONO_FONT,
-                fontSize: '1.375rem',
-                fontWeight: 800,
-                fill: isDark ? '#f8fafc' : '#0f172a',
-              },
-            }}
-          />
-          <div className="text-center">
-            <p className="text-[0.6875rem] text-slate-500 dark:text-slate-400">
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                <Percent className="w-4 h-4 text-amber-500" />
+                Duplicate Rate
+              </CardTitle>
+              <span className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground">Index Hygiene</span>
+            </div>
+            <CardDescription>Share of duplicated copies in the index</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={radialConfig} className="mx-auto aspect-square w-full max-w-[260px]">
+              <RadialBarChart
+                data={[{ name: 'duplicates', value: dupValue }]}
+                endAngle={180}
+                innerRadius={80}
+                outerRadius={110}
+              >
+                <RadialBar
+                  dataKey="value"
+                  fill={dupColor}
+                  cornerRadius={8}
+                  background
+                  className="stroke-transparent stroke-2"
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                  <Label
+                    content={({ viewBox }) => {
+                      if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                        return (
+                          <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) - 10}
+                              className="fill-foreground text-3xl font-extrabold"
+                            >
+                              {stats.duplicateRate.toFixed(1)}%
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 14}
+                              className="fill-muted-foreground text-xs"
+                            >
+                              duplicate rate
+                            </tspan>
+                          </text>
+                        );
+                      }
+                    }}
+                  />
+                </PolarRadiusAxis>
+              </RadialBarChart>
+            </ChartContainer>
+          </CardContent>
+          <CardFooter className="flex-col gap-0.5 text-sm">
+            <p className="text-xs text-muted-foreground">
               <span className="font-bold text-amber-500">{stats.dupFiles.toLocaleString()}</span> duplicate copies
             </p>
-            <p className="text-[0.6875rem] text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground">
               ~<span className="font-bold text-amber-500">{formatSize(stats.dupBytes)}</span> reclaimable
             </p>
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
       </div>
 
-      {/* Row: Monthly timeline + Top folders */}
+      {/* Row 3: 12-Month timeline + Top Folders */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-amber-500" />
-              12-Month Ingestion Timeline
-            </h3>
-            <span className="text-[0.625rem] font-bold uppercase text-slate-400">Monthly {metric === 'count' ? 'Volume' : 'Size (MB)'}</span>
-          </div>
-          <LineChart
-            height={256}
-            dataset={stats.monthlyTimelineData}
-            xAxis={[{ scaleType: 'point', dataKey: 'month', tickLabelStyle: AXIS_TICK_STYLE }]}
-            yAxis={[{ tickLabelStyle: AXIS_TICK_STYLE }]}
-            grid={{ horizontal: true }}
-            series={[{
-              dataKey: metric === 'count' ? 'files' : 'sizeMB',
-              label: metric === 'count' ? 'Monthly Files' : 'Size (MB)',
-              color: '#F59E0B',
-              area: true,
-              showMark: true,
-              valueFormatter: fmt,
-            }]}
-            theme={chartTheme}
-          />
-        </div>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                <TrendingUp className="w-4 h-4 text-amber-500" />
+                12-Month Ingestion Timeline
+              </CardTitle>
+              <span className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground">
+                Monthly {isCount ? 'Volume' : 'Size (MB)'}
+              </span>
+            </div>
+            <CardDescription>Monthly activity across the fiscal year</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={timelineConfig} className="aspect-auto h-[256px] w-full">
+              <AreaChart accessibilityLayer data={stats.monthlyTimelineData}>
+                <defs>
+                  <linearGradient id="fillTimeline" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={`var(--color-${metricKey})`} stopOpacity={0.8} />
+                    <stop offset="95%" stopColor={`var(--color-${metricKey})`} stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                <Area
+                  dataKey={metricKey}
+                  type="natural"
+                  fill="url(#fillTimeline)"
+                  stroke={`var(--color-${metricKey})`}
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
 
-        <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <FolderTree className="w-4 h-4 text-purple-500" />
-              Top Folders by {metric === 'count' ? 'Files' : 'Storage'}
-            </h3>
-            <span className="text-[0.625rem] font-bold uppercase text-slate-400">Top 6</span>
-          </div>
-          {stats.folders.length > 0 ? (
-            <BarChart
-              height={256}
-              layout="horizontal"
-              dataset={stats.folders}
-              borderRadius={6}
-              yAxis={[{
-                scaleType: 'band',
-                dataKey: 'name',
-                categoryGapRatio: 0.4,
-                tickLabelStyle: { fontSize: 10, fill: '#ffffff' },
-              }]}
-              xAxis={[{ scaleType: 'linear', tickLabelStyle: AXIS_TICK_STYLE }]}
-              grid={{ vertical: true }}
-              hideLegend
-              series={[{
-                dataKey: metric === 'count' ? 'count' : 'sizeMB',
-                label: metric === 'count' ? 'Files' : 'Size (MB)',
-                color: '#8B5CF6',
-                valueFormatter: fmt,
-              }]}
-              theme={chartTheme}
-            />
-          ) : (
-            <p className="text-xs text-slate-400 text-center py-6">No folders indexed yet.</p>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                <FolderTree className="w-4 h-4 text-purple-500" />
+                Top Folders by {isCount ? 'Files' : 'Storage'}
+              </CardTitle>
+              <span className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground">Top 6</span>
+            </div>
+            <CardDescription>Biggest top-level directories in the index</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {stats.folders.length > 0 ? (
+              <ChartContainer config={folderConfig} className="aspect-auto h-[256px] w-full">
+                <BarChart accessibilityLayer data={stats.folders} layout="vertical">
+                  <CartesianGrid horizontal={false} />
+                  <XAxis type="number" dataKey={folderMetricKey} tickLine={false} axisLine={false} tickMargin={8} />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tickLine={false}
+                    axisLine={false}
+                    width={86}
+                  />
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                  <Bar
+                    dataKey={folderMetricKey}
+                    fill={`var(--color-${folderMetricKey})`}
+                    radius={4}
+                  />
+                </BarChart>
+              </ChartContainer>
+            ) : (
+              <p className="text-xs text-muted-foreground text-center py-6">No folders indexed yet.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Key Insights */}
