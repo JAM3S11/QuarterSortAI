@@ -325,26 +325,26 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
   if (files.length === 0 && !report) {
     return (
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden amber-scrollbar space-y-6 pb-4">
-        <div className="sticky top-0 z-40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-slate-100/85 dark:to-slate-950/85 rounded-2xl border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-xl bg-slate-100/85 dark:bg-slate-950/85 p-5">
+        <div className="sticky top-0 z-40 bg-gradient-to-r from-[#f3d8c8]/70 via-[#faf9f7] to-transparent rounded-2xl border border-[#d8ceca] flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-xl p-5 shadow-[0_8px_20px_rgba(84,43,43,0.04)]">
           <div className="flex items-center space-x-4 min-w-0">
-            <div className="p-3.5 rounded-2xl bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 shrink-0">
+            <div className="p-3.5 rounded-2xl bg-[#542b2b] text-[#faf9f7] font-black shadow-lg shadow-[#542b2b]/10 shrink-0">
               <BrainCircuit className="w-8 h-8" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-display text-[1.35rem] leading-tight font-extrabold text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-2">
+              <h2 className="font-display text-[1.35rem] leading-tight font-extrabold text-[#542b2b] flex flex-wrap items-center gap-2">
                 Groq AI Audit Report
                 <span
                   title={`Model: ${defaultModel}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 min-w-0"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#f2edea] text-[#542b2b] border border-[#d8ceca] min-w-0"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#542b2b] shrink-0" aria-hidden="true" />
                   <span className="sm:hidden">AI</span>
                   <span className="hidden sm:inline max-w-[14rem] md:max-w-[20rem] truncate">
                     Server-Side Groq · {defaultModel}
                   </span>
                 </span>
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <p className="text-xs text-[#705957] mt-0.5 flex items-center gap-1.5 flex-wrap">
                 Refined deep-dive repository audit — integrity scoring, dimensional analysis, findings, and prioritized actions
               </p>
             </div>
@@ -371,11 +371,11 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
             )}
           </button>
         </div>
-        <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-          <BrainCircuit className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">No Audit Data Available</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
-            The <span className="font-bold text-slate-700 dark:text-slate-300">AI Insights</span> tab generates a comprehensive audit report powered by Groq AI — scoring metadata integrity (out of 100), assigning an audit grade, calculating compliance percentage, assessing risk levels, and providing dimensional deep-dives with prioritised recommendations. Click "Run AI Audit" to generate your first report.
+        <div className="p-12 text-center bg-[#fffdfc] rounded-2xl border border-[#d8ceca] shadow-[0_8px_20px_rgba(84,43,43,0.04)]">
+          <BrainCircuit className="w-12 h-12 text-[#705957] mx-auto mb-3" />
+          <h3 className="font-bold text-[#542b2b] text-sm">No Audit Data Available</h3>
+          <p className="text-xs text-[#705957] max-w-md mx-auto mt-1">
+            The <span className="font-bold text-[#542b2b]">AI Insights</span> tab generates a comprehensive audit report powered by Groq AI — scoring metadata integrity (out of 100), assigning an audit grade, calculating compliance percentage, assessing risk levels, and providing dimensional deep-dives with prioritised recommendations. Click "Run AI Audit" to generate your first report.
           </p>
         </div>
       </div>
@@ -387,29 +387,29 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ files, totalFold
       <style>{`@keyframes progress-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } } .animate-progress { animation: progress-slide 1.4s ease-in-out infinite; }`}</style>
       {/* Top Banner — pinned above the whole AI Insights view, including the
           chat panel, on every breakpoint */}
-      <div className="sticky top-0 z-40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-slate-100/85 dark:to-slate-950/85 rounded-2xl border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-xl bg-slate-100/85 dark:bg-slate-950/85 p-5">
+      <div className="sticky top-0 z-40 bg-gradient-to-r from-[#f3d8c8]/70 via-[#faf9f7] to-transparent rounded-2xl border border-[#d8ceca] flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-xl p-5 shadow-[0_8px_20px_rgba(84,43,43,0.04)]">
         <div className="flex items-center space-x-4 min-w-0">
-          <div className="p-3.5 rounded-2xl bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 shrink-0">
+          <div className="p-3.5 rounded-2xl bg-[#542b2b] text-[#faf9f7] font-black shadow-lg shadow-[#542b2b]/10 shrink-0">
             <BrainCircuit className="w-8 h-8" />
           </div>
           <div className="min-w-0">
-            <h2 className="font-display text-[1.35rem] leading-tight font-extrabold text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-2">
+            <h2 className="font-display text-[1.35rem] leading-tight font-extrabold text-[#542b2b] flex flex-wrap items-center gap-2">
               Groq AI Audit Report
               <span
                 title={`Model: ${defaultModel}`}
-                className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 min-w-0"
+                className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#f2edea] text-[#542b2b] border border-[#d8ceca] min-w-0"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#542b2b] shrink-0" aria-hidden="true" />
                 <span className="sm:hidden">AI</span>
                 <span className="hidden sm:inline max-w-[14rem] md:max-w-[20rem] truncate">
                   Server-Side Groq · {defaultModel}
                 </span>
               </span>
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+            <p className="text-xs text-[#705957] mt-0.5 flex items-center gap-1.5 flex-wrap">
               Refined deep-dive repository audit — integrity scoring, dimensional analysis, findings, and prioritized actions
               {fromCache && (
-                <span className="inline-flex items-center gap-1 text-[0.65rem] font-semibold px-1.5 py-0.5 rounded-full bg-slate-500/10 text-slate-500 dark:text-slate-400 border border-slate-500/20">
+                <span className="inline-flex items-center gap-1 text-[0.65rem] font-semibold px-1.5 py-0.5 rounded-full bg-[#f2edea] text-[#542b2b] border border-[#d8ceca]">
                   <Clock className="w-2.5 h-2.5" />
                   Cached from last session
                 </span>

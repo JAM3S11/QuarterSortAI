@@ -246,8 +246,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
       onClick={() => setMetric(key)}
       className={`px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-colors ${
         metric === key
-          ? 'bg-emerald-500 text-white'
-          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+          ? 'bg-[#542b2b] text-[#faf9f7]'
+          : 'bg-[#f2edea] text-[#705957] hover:text-[#542b2b]'
       }`}
     >
       {label}
@@ -309,22 +309,22 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
   if (files.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 border-b border-[#d8ceca]">
           <div>
-            <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-emerald-500" />
+            <h2 className="text-xl font-extrabold text-[#542b2b] flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-[#542b2b]" />
               Repository Analytics & Financial Quarter Trends
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-[#705957] mt-0.5">
               Volume, storage footprint, category splits, duplicates, folder economics, and timeline metrics
             </p>
           </div>
         </div>
-        <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-          <BarChart3 className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">No Analytics Available Yet</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
-            The <span className="font-bold text-slate-700 dark:text-slate-300">Analytics</span> tab provides KPI cards, quarterly volume bar charts, category pie charts, duplicate rate gauges, a 12-month ingestion timeline, top folder rankings, and key insights — all generated from your scanned repository. Connect a USB drive or load the demo dataset to see your analytics.
+        <div className="p-12 text-center bg-[#fffdfc] rounded-2xl border border-[#d8ceca] shadow-[0_8px_20px_rgba(84,43,43,0.04)]">
+          <BarChart3 className="w-12 h-12 text-[#705957] mx-auto mb-3" />
+          <h3 className="font-bold text-[#542b2b] text-sm">No Analytics Available Yet</h3>
+          <p className="text-xs text-[#705957] max-w-md mx-auto mt-1">
+            The <span className="font-bold text-[#542b2b]">Analytics</span> tab provides KPI cards, quarterly volume bar charts, category pie charts, duplicate rate gauges, a 12-month ingestion timeline, top folder rankings, and key insights — all generated from your scanned repository. Connect a USB drive or load the demo dataset to see your analytics.
           </p>
         </div>
       </div>
@@ -334,13 +334,13 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 border-b border-[#d8ceca]">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-emerald-500" />
+          <h2 className="text-xl font-extrabold text-[#542b2b] flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-[#542b2b]" />
             Repository Analytics & Financial Quarter Trends
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-[#705957] mt-0.5">
             Volume, storage footprint, category splits, duplicates, folder economics, and timeline metrics
           </p>
         </div>
@@ -367,8 +367,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ files }) => {
       {/* Metric toggle */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-slate-400" />
-          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Chart metric:</span>
+          <FileText className="w-4 h-4 text-[#705957]" />
+          <span className="text-xs font-bold text-[#705957]">Chart metric:</span>
           {toggleBtn('count', 'File count')}
           {toggleBtn('sizeMB', 'Storage (MB/GB)')}
         </div>

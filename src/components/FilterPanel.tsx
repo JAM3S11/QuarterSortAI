@@ -37,21 +37,21 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   ];
 
   return (
-    <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+    <div className="p-4 bg-[#fffdfc] rounded-2xl border border-[#d8ceca] space-y-4 shadow-[0_8px_24px_rgba(84,43,43,0.04)]">
+      <div className="flex items-center justify-between pb-3 border-b border-[#f2edea]">
         <div className="flex items-center space-x-2">
-          <Filter className="w-4 h-4 text-emerald-500" />
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+          <Filter className="w-4 h-4 text-[#542b2b]" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#542b2b]">
             Advanced Document Filters
           </h2>
-          <span className="text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+          <span className="text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full bg-[#f2edea] text-[#542b2b]">
             {totalResults} Matched
           </span>
         </div>
 
         <button
           onClick={onResetFilters}
-          className="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center gap-1 transition-colors"
+          className="text-xs font-semibold text-[#705957] hover:text-[#542b2b] flex items-center gap-1 transition-colors"
         >
           <X className="w-3.5 h-3.5" />
           Reset All
@@ -71,8 +71,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 onClick={() => onChangeFilterOptions({ ...filterOptions, selectedQuarter: q })}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                   filterOptions.selectedQuarter === q
-                    ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    ? 'bg-[#542b2b] text-[#faf9f7] shadow-sm'
+                    : 'bg-[#f2edea] text-[#542b2b] hover:bg-[#e9e1dd]'
                 }`}
               >
                 {q}
@@ -93,8 +93,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 onClick={() => onChangeFilterOptions({ ...filterOptions, selectedCategory: cat })}
                 className={`px-2.5 py-1 text-xs font-medium rounded-xl transition-colors ${
                   filterOptions.selectedCategory === cat
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    ? 'bg-[#542b2b]/10 text-[#542b2b] border border-[#542b2b]/30 font-bold'
+                    : 'bg-[#f2edea] text-[#542b2b] hover:bg-[#e9e1dd]'
                 }`}
               >
                 {cat}
@@ -115,8 +115,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 onClick={() => onChangeFilterOptions({ ...filterOptions, dateFilterType: preset.id })}
                 className={`px-2.5 py-1 text-[0.6875rem] font-semibold rounded-lg transition-colors ${
                   filterOptions.dateFilterType === preset.id
-                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950 font-bold'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-[#542b2b] text-[#faf9f7] font-bold'
+                    : 'bg-[#f2edea] text-[#705957] hover:text-[#542b2b]'
                 }`}
               >
                 {preset.label}

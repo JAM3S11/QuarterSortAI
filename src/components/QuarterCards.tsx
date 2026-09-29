@@ -10,19 +10,19 @@ interface QuarterCardsProps {
   onNeedsReviewFilter?: () => void;
 }
 
-const QUARTER_CONFIG: Record<QuarterId, { color: string; bar: string; dot: string }> = {
-  Q1: { color: 'text-emerald-400', bar: 'bg-emerald-500', dot: 'bg-emerald-500' },
-  Q2: { color: 'text-cyan-400', bar: 'bg-cyan-500', dot: 'bg-cyan-500' },
-  Q3: { color: 'text-amber-400', bar: 'bg-amber-500', dot: 'bg-amber-500' },
-  Q4: { color: 'text-indigo-400', bar: 'bg-indigo-500', dot: 'bg-indigo-500' },
+// Quarter swatches: a maroon -> blush ramp matching the --chart-1..4 tokens in index.css.
+// Numbers and labels stay in ink; the swatch alone carries the quarter identity.
+const QUARTER_CONFIG: Record<QuarterId, { bar: string }> = {
+  Q1: { bar: 'bg-[#542b2b]' },
+  Q2: { bar: 'bg-[#805d59]' },
+  Q3: { bar: 'bg-[#9d8580]' },
+  Q4: { bar: 'bg-[#c89d8d]' },
 };
 
-const MONTH_COLORS: Record<string, string> = {
-  July: 'bg-emerald-500/20 text-emerald-400', August: 'bg-emerald-500/20 text-emerald-400', September: 'bg-emerald-500/20 text-emerald-400',
-  October: 'bg-cyan-500/20 text-cyan-400', November: 'bg-cyan-500/20 text-cyan-400', December: 'bg-cyan-500/20 text-cyan-400',
-  January: 'bg-amber-500/20 text-amber-400', February: 'bg-amber-500/20 text-amber-400', March: 'bg-amber-500/20 text-amber-400',
-  April: 'bg-indigo-500/20 text-indigo-400', May: 'bg-indigo-500/20 text-indigo-400', June: 'bg-indigo-500/20 text-indigo-400',
-};
+const QUARTER_IDS: QuarterId[] = ['Q1', 'Q2', 'Q3', 'Q4'];
+
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#542b2b]/30';
 
 interface FYData {
   fyLabel: string;
@@ -98,20 +98,22 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
     return `${d.fyLabel} (${count} files)${d.fyStartYear === currentFYStartYear ? ' — Current' : ''}`;
   };
 
+  const reviewCount = useMemo(() => files.filter((f) => f.classification.needsReview).length, [files]);
+
   if (fyGroups.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
-          <h1 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
-            <PieChart className="w-5 h-5 text-emerald-400" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#d8ceca]">
+          <h1 className="text-xl font-extrabold text-[#542b2b] flex items-center gap-2">
+            <PieChart className="w-5 h-5 text-[#542b2b]" />
             Financial Quarter Summary
           </h1>
         </div>
-        <div className="p-12 text-center bg-slate-900/40 rounded-2xl border border-slate-800">
-          <PieChart className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-          <h4 className="font-bold text-slate-400 text-sm">No files scanned yet</h4>
-          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-            The <span className="font-bold text-slate-300">Dashboard</span> organises every scanned file into financial quarters (Q1–Q4) and months, showing file counts, storage sizes, and per-month breakdowns so you can audit document distribution at a glance. Connect a USB drive to see your quarter classification.
+        <div className="p-12 text-center bg-[#fffdfc] rounded-2xl border border-[#d8ceca] shadow-[0_8px_24px_rgba(84,43,43,0.04)]">
+          <PieChart className="w-10 h-10 text-[#9d8580] mx-auto mb-3" />
+          <h4 className="font-bold text-[#705957] text-sm">No files scanned yet</h4>
+          <p className="text-xs text-[#705957] mt-1 max-w-md mx-auto">
+            The <span className="font-bold text-[#542b2b]">Dashboard</span> organises every scanned file into financial quarters (Q1–Q4) and months, showing file counts, storage sizes, and per-month breakdowns so you can audit document distribution at a glance. Connect a USB drive to see your quarter classification.
           </p>
         </div>
       </div>
@@ -121,19 +123,19 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
   return (
     <div className="space-y-6">
 {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#d8ceca]">
           <div>
-            <h1 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
-              <PieChart className="w-5 h-5 text-emerald-400" />
+            <h1 className="text-xl font-extrabold text-[#542b2b] flex items-center gap-2">
+              <PieChart className="w-5 h-5 text-[#542b2b]" />
               Financial Quarter Summary
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#f2edea] text-[#542b2b]">
                 {totalScanned} files
               </span>
             </h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="text-[0.6875rem] uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+            <label className="text-[0.6875rem] uppercase tracking-wider text-[#705957] font-bold flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-[#542b2b]" />
               Financial Year
             </label>
             <Listbox
@@ -141,20 +143,20 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
               onChange={(val) => setSelectedFYStart(val)}
             >
               <div className="relative">
-                <ListboxButton className="inline-flex items-center pl-3 pr-8 py-1.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer">
+                <ListboxButton className="inline-flex items-center pl-3 pr-8 py-1.5 rounded-xl border border-[#d8ceca] bg-[#fffdfc] text-[#542b2b] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#542b2b]/20 cursor-pointer">
                   <span className="truncate max-w-64">{currentFY ? fyOptionLabel(currentFY) : 'Select Year'}</span>
                 </ListboxButton>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                <ListboxOptions className="absolute left-0 right-0 top-full mt-1.5 z-30 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-1 text-xs font-semibold text-slate-100">
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#705957]" />
+                <ListboxOptions className="absolute left-0 right-0 top-full mt-1.5 z-30 bg-[#fffdfc] border border-[#d8ceca] rounded-xl shadow-2xl py-1 text-xs font-semibold text-[#542b2b]">
                   {fyGroups.map(([fyLabel, d]) => (
                     <ListboxOption
                       key={fyLabel}
                       value={d.fyStartYear}
-                      className="data-[focus]:bg-slate-700 data-[selected]:text-emerald-400 cursor-pointer select-none px-3 py-2 flex items-center justify-between gap-3"
+                      className="data-[focus]:bg-[#f2edea] data-[selected]:text-[#542b2b] cursor-pointer select-none px-3 py-2 flex items-center justify-between gap-3"
                     >
                       <span className="truncate">{fyOptionLabel(d)}</span>
                       {currentFY && d.fyStartYear === currentFY.fyStartYear && (
-                        <Check className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                        <Check className="w-3.5 h-3.5 shrink-0 text-[#542b2b]" />
                       )}
                     </ListboxOption>
                   ))}
@@ -163,7 +165,7 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
             </Listbox>
             <button
               onClick={() => onSelectQuarterFilter('ALL', 'ALL')}
-              className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-1.5"
+              className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-[#d8ceca] hover:bg-[#f2edea] text-[#542b2b] transition-colors flex items-center gap-1.5"
             >
               View All Files
               <ArrowRight className="w-3.5 h-3.5" />
@@ -174,22 +176,26 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
       {currentFY && (
         <>
           {/* FY description bar */}
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-slate-500">
-              <span className="font-semibold text-slate-300">{currentFY.fyLabel}</span>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-[#705957]">
+              <span className="font-semibold text-[#542b2b]">{currentFY.fyLabel}</span>
               {' '}—{' '}
-              {QUARTER_MONTHS.Q1.map((m, i) => i === 0 ? `${m} ${currentFY.fyStartYear}` : `${m} ${currentFY.fyStartYear}`).join(' · ')}
+              {QUARTER_MONTHS.Q1.map((m) => `${m} ${currentFY.fyStartYear}`).join(' · ')}
               {' '}&mdash;{' '}
-              {QUARTER_MONTHS.Q4.map(m => `${m} ${currentFY.fyStartYear + 1}`).join(' · ')}
+              {QUARTER_MONTHS.Q4.map((m) => `${m} ${currentFY.fyStartYear + 1}`).join(' · ')}
             </p>
-            <span className="hidden sm:inline text-[0.6875rem] text-slate-600">
+            <span className="hidden shrink-0 font-mono text-[0.6875rem] text-[#705957] sm:inline">
               1 Jul {currentFY.fyStartYear} &rarr; 30 Jun {currentFY.fyStartYear + 1}
             </span>
           </div>
 
           {/* Quarter summary bar */}
-          <div className="flex h-2 rounded-full overflow-hidden bg-slate-800">
-            {(['Q1', 'Q2', 'Q3', 'Q4'] as QuarterId[]).map((qId) => {
+          <div
+            role="img"
+            aria-label={`Files by quarter: ${QUARTER_IDS.map((q) => `${q} ${currentFY.quarters[q].fileCount}`).join(', ')}`}
+            className="flex h-2 gap-px overflow-hidden rounded-full bg-[#f2edea]"
+          >
+            {QUARTER_IDS.map((qId) => {
               const qTotal = currentFY.quarters[qId].fileCount;
               const pct = totalScanned > 0 ? (qTotal / totalScanned) * 100 : 0;
               if (pct === 0) return null;
@@ -198,42 +204,46 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
           </div>
 
           {/* 4 Quarter Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            {(['Q1', 'Q2', 'Q3', 'Q4'] as QuarterId[]).map((qId) => {
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {QUARTER_IDS.map((qId) => {
               const cfg = QUARTER_CONFIG[qId];
               const qData = currentFY.quarters[qId];
-
-              const monthYearForQuarter = (month: MonthName, idx: number): number => {
-                if (qId === 'Q1' || qId === 'Q2') return currentFY.fyStartYear;
-                return currentFY.fyStartYear + 1;
-              };
+              const yearFor = qId === 'Q1' || qId === 'Q2' ? currentFY.fyStartYear : currentFY.fyStartYear + 1;
+              const share = totalScanned > 0 ? Math.round((qData.fileCount / totalScanned) * 100) : 0;
 
               return (
-                <div key={qId} className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2.5 py-1 text-xs rounded-lg font-bold ${MONTH_COLORS[QUARTER_MONTHS[qId][0]]}`}>
-                        {qId}
-                      </span>
-                    </div>
-                    <span className="text-[0.6875rem] text-slate-500">
-                      {totalScanned > 0 ? Math.round((qData.fileCount / totalScanned) * 100) : 0}%
+                // @container: month rows adapt to the card's own width, not the screen's.
+                <div
+                  key={qId}
+                  className="@container flex flex-col rounded-2xl border border-[#d8ceca] bg-[#fffdfc] p-5 shadow-[0_8px_24px_rgba(84,43,43,0.04)]"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d8ceca] px-2.5 py-1 text-xs font-bold text-[#542b2b]">
+                      <span aria-hidden className={`h-2 w-2 rounded-full ${cfg.bar}`} />
+                      {qId}
                     </span>
+                    <span className="font-mono text-[0.6875rem] text-[#705957]">{share}%</span>
                   </div>
 
-                  <p className="text-[0.6875rem] text-slate-500 mb-3">
-                    {QUARTER_MONTHS[qId].map((m, i) => `${m} ${monthYearForQuarter(m, i)}`).join(' · ')}
+                  <p className="mb-4 text-[0.6875rem] leading-relaxed text-[#705957]">
+                    {QUARTER_MONTHS[qId].map((m) => `${m} ${yearFor}`).join(' · ')}
                   </p>
 
-                  <div className="flex items-baseline justify-between mb-4">
+                  <div className="mb-4 flex items-baseline justify-between gap-2">
                     <div className="flex items-baseline gap-1.5">
-                      <span className={`text-3xl font-black ${cfg.color}`}>{qData.fileCount}</span>
-                      <span className="text-xs text-slate-500">files</span>
+                      <span
+                        className={`font-display text-4xl font-semibold tabular-nums ${
+                          qData.fileCount === 0 ? 'text-[#9d8580]' : 'text-[#542b2b]'
+                        }`}
+                      >
+                        {qData.fileCount}
+                      </span>
+                      <span className="text-xs text-[#705957]">{qData.fileCount === 1 ? 'file' : 'files'}</span>
                     </div>
-                    <span className="text-xs font-mono text-slate-500">{formatSize(qData.sizeBytes)}</span>
+                    <span className="font-mono text-xs text-[#705957]">{formatSize(qData.sizeBytes)}</span>
                   </div>
 
-                  <div className="space-y-1.5 mt-auto pt-4 border-t border-slate-800">
+                  <div className="mt-auto space-y-1.5 border-t border-[#d8ceca] pt-4">
                     {QUARTER_MONTHS[qId].map((month) => {
                       const mData = qData.months[month];
                       if (!mData || mData.count === 0) return null;
@@ -241,15 +251,15 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
                         <button
                           key={`${currentFY.fyLabel}-${month}`}
                           onClick={() => onSelectQuarterFilter(qId, month)}
-                          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-800/60 hover:border-slate-700 transition-colors"
+                          className={`flex w-full items-center justify-between gap-2 rounded-lg border border-[#d8ceca] bg-[#faf9f7] px-2.5 py-1.5 text-xs transition-colors hover:border-[#9d8580] hover:bg-[#f2edea] ${focusRing}`}
                         >
-                          <span className="font-medium text-slate-400 flex items-center gap-1.5">
-                            <Calendar className="w-3 h-3 text-slate-600" />
-                            {month} {mData.year}
+                          <span className="min-w-0 truncate font-medium text-[#705957]" title={`${month} ${mData.year}`}>
+                            <span className="@[14rem]:hidden">{month.slice(0, 3)}</span>
+                            <span className="hidden @[14rem]:inline">{month}</span> {mData.year}
                           </span>
-                          <span className="font-mono text-slate-300">
-                            {mData.count} <span className="text-slate-600">·</span>{' '}
-                            <span className="text-slate-500">{formatSize(mData.sizeBytes)}</span>
+                          <span className="shrink-0 whitespace-nowrap font-mono tabular-nums text-[#542b2b]">
+                            {mData.count} <span className="text-[#9d8580]">·</span>{' '}
+                            <span className="text-[#705957]">{formatSize(mData.sizeBytes)}</span>
                           </span>
                         </button>
                       );
@@ -258,9 +268,10 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
 
                   <button
                     onClick={() => onSelectQuarterFilter(qId, 'ALL')}
-                    className={`mt-3 text-[0.6875rem] font-semibold ${cfg.color} hover:underline flex items-center gap-1`}
+                    className={`group mt-3 flex items-center gap-1 self-start rounded text-[0.6875rem] font-semibold text-[#542b2b] underline-offset-4 hover:underline ${focusRing}`}
                   >
-                    Explore all {qId} files <ArrowRight className="w-3 h-3" />
+                    Explore all {qId} files{' '}
+                    <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden />
                   </button>
                 </div>
               );
@@ -270,33 +281,33 @@ export const QuarterCards: React.FC<QuarterCardsProps> = ({ files, onSelectQuart
       )}
 
       {/* Footer insight */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 p-4 bg-slate-900/60 rounded-2xl border border-slate-800 flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
-            <HardDrive className="w-5 h-5" />
+      <div className="flex flex-col gap-4 md:flex-row">
+        <div className="flex flex-1 items-center gap-3 rounded-2xl border border-[#d8ceca] bg-[#fffdfc] p-4 shadow-[0_8px_24px_rgba(84,43,43,0.04)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#805d59] text-[#542b2b]">
+            <HardDrive className="h-4 w-4" strokeWidth={1.5} aria-hidden />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-200">
+            <p className="text-xs font-bold text-[#542b2b]">
               Classification: Metadata → Filename → OCR → Folder → Modified → Created
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#705957]">
               6-tier priority engine. Files flagged "Needs Review" when confidence below 60%.
             </p>
           </div>
         </div>
-        {files.filter(f => f.classification.needsReview).length > 0 && (
+        {reviewCount > 0 && (
           <button
             onClick={() => onNeedsReviewFilter?.()}
-            className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 flex items-center gap-3 hover:bg-amber-500/15 transition-colors shrink-0"
+            className={`flex shrink-0 items-center gap-3 rounded-2xl border border-[#e3b7a8] bg-[#fbf1ed] p-4 transition-colors hover:bg-[#f7e6df] ${focusRing}`}
           >
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400">
-              <FileText className="w-5 h-5" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f2dcd3] text-[#a4472f]">
+              <FileText className="h-4 w-4" strokeWidth={1.5} aria-hidden />
             </div>
             <div className="text-left">
-              <p className="text-xs font-bold text-amber-400">
-                {files.filter(f => f.classification.needsReview).length} Need{files.filter(f => f.classification.needsReview).length === 1 ? '' : 's'} Review
+              <p className="text-xs font-bold text-[#a4472f]">
+                {reviewCount} Need{reviewCount === 1 ? 's' : ''} Review
               </p>
-              <p className="text-[0.6875rem] text-amber-500/70">Click to review low-confidence files</p>
+              <p className="text-[0.6875rem] text-[#8a5a4d]">Click to review low-confidence files</p>
             </div>
           </button>
         )}

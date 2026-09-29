@@ -1,6 +1,9 @@
-import React, { useEffect } from 'react';
-import { motion } from 'motion/react';
-import { PlugZap, AlertTriangle, XCircle, CheckCircle2 } from 'lucide-react';
+import React from 'react';
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
+import { AlertTriangle, ArrowRight, HardDrive } from 'lucide-react';
+
+/* Shares the landing page's editorial palette:
+     paper #faf9f7   ink #542b2b   body #705957   rule #d8ceca   ring #805d59 */
 
 interface USBReplaceConfirmModalProps {
   isOpen: boolean;
@@ -9,94 +12,98 @@ interface USBReplaceConfirmModalProps {
   onCancel: () => void;
 }
 
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#542b2b] focus-visible:ring-offset-2 focus-visible:ring-offset-[#faf9f7]';
+
 export const USBReplaceConfirmModal: React.FC<USBReplaceConfirmModalProps> = ({
   isOpen,
   currentDriveName,
   onConfirm,
   onCancel,
-}) => {
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [isOpen, onCancel]);
+}) => (
+  // Escape and outside click both cancel — the safe choice — so nothing is replaced by accident.
+  <Dialog open={isOpen} onClose={onCancel} className="relative z-50">
+    <DialogBackdrop
+      transition
+      className="fixed inset-0 bg-[#542b2b]/25 backdrop-blur-sm transition-opacity duration-300 ease-out data-closed:opacity-0 motion-reduce:transition-none"
+    />
 
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.92 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="relative w-full max-w-md bg-slate-900/95 border border-slate-700 rounded-2xl shadow-[0_0_50px_rgba(14,165,233,0.15)] overflow-hidden text-slate-100 flex flex-col"
+    <div className="fixed inset-0 flex items-end justify-center p-0 sm:items-center sm:p-4">
+      <DialogPanel
+        transition
+        className="relative flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-md border border-[#d8ceca] bg-[#faf9f7] text-[#542b2b] shadow-[0_24px_60px_-20px_rgba(84,43,43,0.35)] transition duration-300 ease-out data-closed:translate-y-4 data-closed:opacity-0 motion-reduce:transition-none sm:rounded-sm"
       >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 bg-slate-950/80">
-          <div className="flex items-center space-x-3">
-            <div className="relative">
-              <PlugZap className="w-6 h-6 text-sky-400" />
-              <div className="absolute -inset-1 bg-sky-500/20 rounded-full blur-sm" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold tracking-wide text-slate-100">
-                Connect a Different USB Drive
-              </h2>
-              <p className="text-xs text-slate-400">Please confirm before switching drives</p>
-            </div>
-          </div>
-        </div>
+        {/* ---------- Header ---------- */}
+        <header className="border-b border-[#d8ceca] px-5 py-5 sm:px-8 sm:py-6">
+          <p className="flex items-center gap-3 text-[0.6875rem] uppercase tracking-[0.2em] text-[#705957]">
+            <span className="font-mono">(01)</span>
+            <span className="h-px w-6 bg-[#d8ceca]" aria-hidden />
+            Switch drive
+          </p>
+          <DialogTitle className="mt-3 font-display text-2xl font-normal leading-tight tracking-tight sm:text-[1.75rem]">
+            Connect a different USB drive
+          </DialogTitle>
+          <p className="mt-1.5 text-sm text-[#705957]">Please confirm before switching drives.</p>
+        </header>
 
-        {/* Body */}
-        <div className="p-6 space-y-3 bg-slate-900/50">
-          <p className="text-sm leading-relaxed text-slate-200">
-            Are you sure you want to remove the current drive
-            {currentDriveName ? (
-              <>
-                {' '}
-                <span className="font-mono font-bold text-sky-300">“{currentDriveName}”</span>{' '}
-              </>
-            ) : (
-              ' currently in use '
+        {/* ---------- Body ---------- */}
+        <div className="space-y-5 overflow-y-auto px-5 py-6 sm:px-8">
+          <div>
+            <p className="text-sm leading-relaxed">
+              Remove the current drive and connect another USB drive instead?
+            </p>
+
+            {currentDriveName && (
+              <div className="mt-4 flex items-center gap-3 rounded-sm border border-[#d8ceca] p-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#805d59]">
+                  <HardDrive className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[0.6875rem] uppercase tracking-[0.2em] text-[#705957]">Currently in use</p>
+                  <p className="mt-0.5 truncate font-mono text-sm" title={currentDriveName}>
+                    {currentDriveName}
+                  </p>
+                </div>
+              </div>
             )}
-            and connect another USB drive instead?
+          </div>
+
+          <p className="text-sm leading-relaxed text-[#705957]">
+            The current drive&apos;s index will be removed from this view, and its files won&apos;t be shown until
+            you connect it again. No files on the drive are changed or deleted — this only affects what is
+            displayed here.
           </p>
 
-          <p className="text-xs leading-relaxed text-slate-400">
-            The current drive's index will be removed from this view, and its files will no longer be
-            shown until you connect it again. No files on the drive are changed or deleted — this only
-            affects what is displayed here.
-          </p>
-
-          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <p className="text-[0.6875rem] leading-relaxed text-amber-200/90">
-              If you are still working with the current drive, choose "No" to keep everything as it is.
+          <div className="flex items-start gap-3 rounded-sm border border-[#e3b7a8] bg-[#fbf1ed] p-3.5">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#a4472f]" strokeWidth={1.5} aria-hidden />
+            <p className="text-xs leading-relaxed text-[#8a5a4d]">
+              Still working with the current drive? Choose <span className="font-medium">No</span> to keep
+              everything as it is.
             </p>
           </div>
         </div>
 
-        {/* Footer / Actions */}
-        <div className="p-4 bg-slate-950/90 border-t border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5">
+        {/* ---------- Footer ---------- */}
+        <footer className="flex flex-col-reverse gap-2.5 border-t border-[#d8ceca] px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-8">
+          {/* Focus starts on the safe choice. */}
           <button
+            type="button"
             onClick={onCancel}
-            className="flex items-center justify-center px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors"
+            autoFocus
+            className={`inline-flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-[#542b2b] px-6 text-sm transition-colors hover:bg-[#542b2b] hover:text-[#faf9f7] ${focusRing}`}
           >
-            <XCircle className="w-4 h-4 mr-2" />
-            No, Keep the Current Drive
+            No, keep the current drive
           </button>
           <button
+            type="button"
             onClick={onConfirm}
-            className="flex items-center justify-center px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-emerald-950 text-xs font-extrabold transition-colors"
+            className={`group inline-flex h-11 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-[#542b2b] px-6 text-sm text-[#faf9f7] transition-colors hover:bg-[#6b3a3a] ${focusRing}`}
           >
-            <CheckCircle2 className="w-4 h-4 mr-2" />
-            Yes, Connect Another USB
+            Yes, connect another USB
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />
           </button>
-        </div>
-      </motion.div>
+        </footer>
+      </DialogPanel>
     </div>
-  );
-};
+  </Dialog>
+);

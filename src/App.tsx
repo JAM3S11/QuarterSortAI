@@ -73,7 +73,7 @@ export default function App() {
     return stored ? Math.max(64, Math.min(400, Number(stored))) : 256;
   });
   const [cyberMode, setCyberMode] = useState<boolean>(false);
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
   const [ocrEnabled, setOcrEnabled] = useState<boolean>(false);
   const [isRefreshingDisks, setIsRefreshingDisks] = useState<boolean>(false);
 
@@ -519,7 +519,7 @@ export default function App() {
       onConnectUSB={handleConnectUSB}
     />
       ) : (
-    <div className={`h-dvh overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors ${cyberMode ? 'border-2 border-emerald-500/20 shadow-[0_0_30px_rgba(0,255,102,0.1)]' : ''}`}>
+    <div className={`h-dvh overflow-hidden bg-[#faf9f7] text-[#542b2b] flex flex-col font-sans transition-colors ${cyberMode ? 'border-2 border-[#542b2b]/20 shadow-[0_0_30px_rgba(84,43,43,0.08)]' : ''}`}>
       <Navbar
         volumeInfo={volumeInfo}
         onConnectUSB={handleConnectUSBClick}
@@ -528,16 +528,16 @@ export default function App() {
         onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
       />
 
-      <div className="relative flex-1 flex overflow-hidden">
+      <div className="relative flex-1 flex overflow-hidden bg-[#faf9f7]">
         {isSidebarOpen && (
           <div
-            className="absolute inset-0 z-30 bg-slate-950/60 backdrop-blur-sm lg:hidden"
+            className="absolute inset-0 z-30 bg-[#542b2b]/30 backdrop-blur-sm lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
 
         <aside
-          className={`absolute lg:static inset-y-0 left-0 z-40 w-64 lg:w-[var(--sidebar-w)] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col shrink-0 shadow-2xl lg:shadow-none overflow-hidden ${
+          className={`absolute lg:static inset-y-0 left-0 z-40 w-64 lg:w-[var(--sidebar-w)] border-r border-[#d8ceca] bg-[#f5f1ee] flex flex-col shrink-0 shadow-2xl lg:shadow-none overflow-hidden ${
             sidebarResizing ? '' : 'transition-[width,transform] duration-300 ease-in-out'
           } ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'

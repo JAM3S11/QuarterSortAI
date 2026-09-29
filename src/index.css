@@ -8,41 +8,41 @@
    tooltips). Values are tuned to the existing slate + emerald/amber accent.
    ========================================================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --border: #e2e8f0;
+  --background: #faf9f7;
+  --foreground: #542b2b;
+  --card: #fffdfc;
+  --card-foreground: #542b2b;
+  --muted: #f2edea;
+  --muted-foreground: #705957;
+  --border: #d8ceca;
 
-  --chart-1: #10b981;
-  --chart-2: #06b6d4;
-  --chart-3: #f59e0b;
-  --chart-4: #8b5cf6;
-  --chart-5: #ec4899;
-  --chart-6: #6366f1;
-  --chart-7: #14b8a6;
-  --chart-8: #94a3b8;
+  --chart-1: #542b2b;
+  --chart-2: #805d59;
+  --chart-3: #9d8580;
+  --chart-4: #c89d8d;
+  --chart-5: #e3b7a8;
+  --chart-6: #8d6c62;
+  --chart-7: #b98f84;
+  --chart-8: #d9c3b9;
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --border: #1e293b;
+  --background: #faf9f7;
+  --foreground: #542b2b;
+  --card: #fffdfc;
+  --card-foreground: #542b2b;
+  --muted: #f2edea;
+  --muted-foreground: #705957;
+  --border: #d8ceca;
 
-  --chart-1: #10b981;
-  --chart-2: #06b6d4;
-  --chart-3: #f59e0b;
-  --chart-4: #8b5cf6;
-  --chart-5: #ec4899;
-  --chart-6: #6366f1;
-  --chart-7: #14b8a6;
-  --chart-8: #94a3b8;
+  --chart-1: #542b2b;
+  --chart-2: #805d59;
+  --chart-3: #9d8580;
+  --chart-4: #c89d8d;
+  --chart-5: #e3b7a8;
+  --chart-6: #8d6c62;
+  --chart-7: #b98f84;
+  --chart-8: #d9c3b9;
 }
 
 @theme inline {

@@ -31,7 +31,6 @@ const focusRing =
 
 const NAV_LEFT = [
   { href: '#get-started', label: 'How it works' },
-  { href: '#features', label: 'Features' },
   { href: '#privacy', label: 'Privacy' },
 ];
 
@@ -40,15 +39,6 @@ const STEPS = [
   { number: '2', title: 'Index automatically', description: 'Every file is fingerprinted with SHA-256 and placed in a fiscal quarter from its metadata, name and dates.' },
   { number: '3', title: 'Review by quarter', description: 'Browse Q1–Q4, resolve duplicates and explore where your storage actually goes.' },
   { number: '4', title: 'Generate the audit', description: 'Produce a structured report with anomaly flags, a compliance score and clear next steps.' },
-];
-
-const FEATURES = [
-  { title: 'Quarter classification', desc: 'Files are assigned to Q1–Q4 on a July–June fiscal year, with low-confidence items set aside for review.' },
-  { title: 'SHA-256 integrity', desc: 'Each file carries a content fingerprint for reliable deduplication and a verifiable chain of custody.' },
-  { title: 'Duplicate forensics', desc: 'Exact copies are grouped by hash, with their locations and the space you would reclaim.' },
-  { title: 'Storage analytics', desc: 'Charts break volume down by quarter, category and folder — no spreadsheet export needed.' },
-  { title: 'AI audit report', desc: 'A structured audit of every scan with anomaly flags, scoring and prioritised recommendations.' },
-  { title: 'Document preview', desc: 'Open PDF, Word, Excel, PowerPoint and image files in place, without leaving the index.' },
 ];
 
 const PRIVACY = [
@@ -94,7 +84,7 @@ const FAQS = [
 const Dot: React.FC = () => <span aria-hidden className="select-none text-[#9d8580]">•</span>;
 
 const NavLink: React.FC<{ href: string; children: React.ReactNode }> = ({ href, children }) => (
-  <a href={href} className={`transition-opacity hover:opacity-60 ${focusRing}`}>
+  <a href={href} className={`inline-flex min-h-9 items-center transition-opacity hover:opacity-60 ${focusRing}`}>
     {children}
   </a>
 );
@@ -115,13 +105,20 @@ const CtaButton: React.FC<{
   children: React.ReactNode;
   variant?: 'solid' | 'outline';
   shape?: 'rounded' | 'square';
+  size?: 'sm' | 'md';
+  width?: 'auto' | 'block' | 'block-sm';
+  arrow?: boolean;
 }> = ({
-  onClick, children, variant = 'solid', shape = 'rounded',
+  onClick, children, variant = 'solid', shape = 'rounded', size = 'md', width = 'auto', arrow = true,
 }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`group inline-flex h-12 items-center gap-3 px-7 text-sm transition-colors ${focusRing} ${
+    className={`group inline-flex items-center justify-center gap-2.5 font-medium transition-colors active:opacity-80 ${focusRing} ${
+      size === 'sm' ? 'h-9 px-4 text-xs' : 'h-12 px-6 text-sm sm:px-7'
+    } ${
+      width === 'block' ? 'w-full' : width === 'block-sm' ? 'w-full sm:w-auto' : 'w-auto'
+    } ${
       shape === 'rounded' ? 'rounded-full' : 'rounded-sm'
     } ${
       variant === 'solid'
@@ -130,7 +127,12 @@ const CtaButton: React.FC<{
     }`}
   >
     {children}
-    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />
+    {arrow && (
+      <ArrowRight
+        className={`shrink-0 transition-transform group-hover:translate-x-1 ${size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'}`}
+        aria-hidden
+      />
+    )}
   </button>
 );
 
@@ -165,7 +167,7 @@ const SortingIllustration: React.FC = () => {
   return (
     <svg
       viewBox="0 0 460 300"
-      className="w-[430px] max-w-full"
+      className="h-auto w-full max-w-[420px]"
       fill="none"
       stroke="#542b2b"
       strokeWidth={1.25}
@@ -432,7 +434,7 @@ const HeroRobotIllustration: React.FC = () => {
   return (
     <div
       ref={wrapRef}
-      className={`w-full max-w-[400px] sm:max-w-[460px] lg:max-w-[500px] ${animated ? 'cursor-crosshair' : ''}`}
+      className={`w-full max-w-[300px] select-none sm:max-w-[400px] lg:max-w-[500px] ${animated ? 'cursor-crosshair' : ''}`}
       {...pointerHandlers}
     >
       <svg
@@ -675,24 +677,24 @@ const StepsTimeline: React.FC = () => {
       <motion.ol
         variants={stagger}
         {...inView}
-        className="relative flex flex-col gap-12 py-10 [--bow:20px] sm:[--bow:36px] lg:gap-16 lg:py-12 lg:[--bow:64px]"
+        className="relative flex flex-col gap-11 py-6 [--bow:12px] sm:py-10 sm:[--bow:36px] lg:gap-16 lg:py-12 lg:[--bow:64px]"
       >
         {STEPS.map((step, i) => (
           <motion.li
             key={step.number}
             variants={rise}
-            className="relative flex items-start gap-6 sm:gap-8"
+            className="relative flex items-start gap-4 sm:gap-8"
             style={{ marginLeft: `calc(var(--bow) * ${arcOffset(i, STEPS.length).toFixed(3)})` }}
           >
             <div
               ref={(el) => { circleRefs.current[i] = el; }}
-              className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#805d59] bg-[#faf9f7] font-display text-lg sm:h-14 sm:w-14 sm:text-xl"
+              className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#805d59] bg-[#faf9f7] font-display text-base sm:h-14 sm:w-14 sm:text-xl"
             >
               {step.number}
             </div>
-            <div className="max-w-md pt-1">
-              <h3 className="font-display text-xl font-normal sm:text-2xl">{step.title}</h3>
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#705957]">{step.description}</p>
+            <div className="min-w-0 flex-1 pt-0.5 sm:max-w-md sm:flex-none sm:pt-1">
+              <h3 className="font-display text-lg font-normal leading-snug sm:text-2xl">{step.title}</h3>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-[#705957] sm:mt-2 sm:max-w-sm sm:text-sm">{step.description}</p>
             </div>
           </motion.li>
         ))}
@@ -702,18 +704,146 @@ const StepsTimeline: React.FC = () => {
 };
 
 /* --------------------------------------------------------------------------
+   Intro loader: Newton's cradle shown while the page's fonts load, for at
+   least one full swing so it never just flashes.
+   -------------------------------------------------------------------------- */
+
+const MIN_INTRO_MS = 1600; // one full cradle cycle
+const MAX_INTRO_MS = 4000; // never hold the page hostage to a slow font request
+
+// Module-level so it survives in-app navigation (dashboard -> landing) but
+// resets on a real page load or refresh.
+let introShown = false;
+
+const useIntro = () => {
+  const [ready, setReady] = React.useState(() => {
+    if (introShown || typeof window === 'undefined') return true;
+    // Users who prefer reduced motion skip the animated loader entirely.
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  });
+
+  React.useEffect(() => {
+    if (ready) {
+      introShown = true;
+      return;
+    }
+    let cancelled = false;
+
+    const fontsLoaded = Promise.race([
+      Promise.all(
+        ['600 1em Sora', '400 1em Inter', '400 1em "JetBrains Mono"'].map((f) => document.fonts?.load(f)),
+      ).catch(() => undefined),
+      new Promise((resolve) => window.setTimeout(resolve, MAX_INTRO_MS)),
+    ]);
+    const minimumTime = new Promise((resolve) => window.setTimeout(resolve, MIN_INTRO_MS));
+
+    Promise.all([fontsLoaded, minimumTime]).then(() => {
+      if (cancelled) return;
+      introShown = true;
+      setReady(true);
+    });
+    return () => { cancelled = true; };
+  }, [ready]);
+
+  return ready;
+};
+
+const PageLoader: React.FC = () => (
+  <motion.div
+    role="status"
+    className="fixed inset-0 z-[100] flex select-none flex-col items-center justify-center bg-[#faf9f7] p-6 text-[#542b2b]"
+    initial={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.5, ease: 'easeOut' }}
+  >
+    <div className="aspect-[4/3] w-64 sm:w-80">
+      <svg viewBox="0 0 240 180" className="h-full w-full overflow-visible" fill="none" aria-hidden>
+        {/* Real-physics swing: the end balls rise, fall, and hand off to each other. */}
+        <style>{`
+          @keyframes qs-cradle-left {
+            0% { transform: rotate(0deg); animation-timing-function: ease-out; }
+            25% { transform: rotate(38deg); animation-timing-function: ease-in; }
+            50% { transform: rotate(0deg); animation-timing-function: linear; }
+            100% { transform: rotate(0deg); animation-timing-function: linear; }
+          }
+          @keyframes qs-cradle-right {
+            0% { transform: rotate(0deg); animation-timing-function: linear; }
+            50% { transform: rotate(0deg); animation-timing-function: ease-out; }
+            75% { transform: rotate(-38deg); animation-timing-function: ease-in; }
+            100% { transform: rotate(0deg); animation-timing-function: linear; }
+          }
+          .qs-cradle-left { transform-origin: 80px 45px; animation: qs-cradle-left 1.6s infinite; }
+          .qs-cradle-right { transform-origin: 160px 45px; animation: qs-cradle-right 1.6s infinite; }
+        `}</style>
+
+        {/* Frame */}
+        <path d="M 55 45 Q 55 40 60 40 L 180 40 Q 185 40 185 45" stroke="#d8ceca" strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M 57 42 L 57 125" stroke="#d8ceca" strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M 183 42 L 183 125" stroke="#d8ceca" strokeWidth="3.5" strokeLinecap="round" />
+
+        {/* Ground */}
+        <g stroke="#d8ceca" strokeWidth="3" strokeLinecap="round">
+          <line x1="15" y1="125" x2="30" y2="125" opacity="0.5" />
+          <line x1="40" y1="125" x2="70" y2="125" />
+          <line x1="75" y1="125" x2="165" y2="125" />
+          <line x1="170" y1="125" x2="200" y2="125" />
+          <line x1="205" y1="125" x2="225" y2="125" opacity="0.5" />
+        </g>
+
+        {/* Swinging left ball */}
+        <g className="qs-cradle-left">
+          <line x1="80" y1="42" x2="80" y2="100" stroke="#805d59" strokeWidth="2" />
+          <circle cx="80" cy="110" r="10" stroke="#542b2b" strokeWidth="2.5" fill="#faf9f7" />
+          <path d="M 76 107 A 5 5 0 0 1 80 104" stroke="#9d8580" strokeWidth="1.8" strokeLinecap="round" />
+        </g>
+
+        {/* Resting middle balls */}
+        {[100, 120, 140].map((x) => (
+          <g key={x}>
+            <line x1={x} y1="42" x2={x} y2="100" stroke="#d8ceca" strokeWidth="2" />
+            <circle cx={x} cy="110" r="10" stroke="#9d8580" strokeWidth="2.5" fill="#faf9f7" />
+            <path d={`M ${x - 4} 107 A 5 5 0 0 1 ${x} 104`} stroke="#d8ceca" strokeWidth="1.8" strokeLinecap="round" />
+          </g>
+        ))}
+
+        {/* Swinging right ball */}
+        <g className="qs-cradle-right">
+          <line x1="160" y1="42" x2="160" y2="100" stroke="#805d59" strokeWidth="2" />
+          <circle cx="160" cy="110" r="10" stroke="#542b2b" strokeWidth="2.5" fill="#faf9f7" />
+          <path d="M 156 107 A 5 5 0 0 1 160 104" stroke="#9d8580" strokeWidth="1.8" strokeLinecap="round" />
+        </g>
+      </svg>
+    </div>
+
+    <p className="mt-3 animate-pulse font-mono text-xs uppercase tracking-[0.2em] text-[#705957]">Loading…</p>
+  </motion.div>
+);
+
+/* --------------------------------------------------------------------------
    Page
    -------------------------------------------------------------------------- */
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
+const LandingContent: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
   const year = new Date().getFullYear();
 
   return (
     <MotionConfig reducedMotion="user">
-      <div id="top" className="min-h-screen bg-[#faf9f7] text-[#542b2b] antialiased selection:bg-[#542b2b] selection:text-[#faf9f7]">
+      <div
+        id="top"
+        className="min-h-screen overflow-x-clip bg-[#faf9f7] text-[#542b2b] antialiased selection:bg-[#542b2b] selection:text-[#faf9f7]"
+      >
         {/* ================= HEADER ================= */}
         <header className="sticky top-0 z-40 border-b border-[#d8ceca] bg-[#faf9f7]/90 backdrop-blur">
-          <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center lg:grid-cols-3">
+          {/* Phone: a single compact bar — brand on the left, one clear action. */}
+          <div className="flex items-center justify-between gap-3 px-4 py-3 sm:hidden">
+            <Logo size="md" />
+            <CtaButton onClick={onConnectUSB} size="sm" arrow={false}>
+              Scan a drive
+            </CtaButton>
+          </div>
+
+          {/* Tablet and up: the three-cell masthead. */}
+          <div className="mx-auto hidden max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center sm:grid">
             <nav aria-label="Sections" className="hidden items-center gap-4 whitespace-nowrap px-8 py-5 text-sm lg:flex">
               {NAV_LEFT.map((l, i) => (
                 <React.Fragment key={l.href}>
@@ -732,9 +862,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
                 <NavLink href="#faq">FAQ</NavLink>
                 <Dot />
               </span>
-              <button type="button" onClick={onConnectUSB} className={`underline-offset-4 transition-opacity hover:opacity-60 hover:underline ${focusRing}`}>
-                <span className="sm:hidden">Scan</span>
-                <span className="hidden sm:inline">Scan a drive</span>
+              <a
+                href="#get-started"
+                className={`py-2 underline-offset-4 transition-opacity hover:opacity-60 hover:underline lg:hidden ${focusRing}`}
+              >
+                How it works
+              </a>
+              <button
+                type="button"
+                onClick={onConnectUSB}
+                className={`py-2 underline-offset-4 transition-opacity hover:opacity-60 hover:underline active:opacity-60 ${focusRing}`}
+              >
+                Scan a drive
               </button>
             </nav>
           </div>
@@ -750,47 +889,59 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
                 animate="show"
                 className="grid lg:min-h-[440px] lg:grid-cols-2"
               >
-                <div className="flex flex-col justify-center px-8 pb-6 pt-16 sm:px-12 lg:border-r lg:border-[#d8ceca] lg:px-16 lg:py-20">
+                <div className="flex flex-col justify-center px-5 pb-8 pt-12 sm:px-12 sm:pb-10 sm:pt-16 lg:border-r lg:border-[#d8ceca] lg:px-16 lg:py-20">
                   <motion.div variants={rise}>
-                    <SectionLabel index="00">Local-first file intelligence</SectionLabel>
+                    <SectionLabel index="00">Fiscal file organiser</SectionLabel>
                   </motion.div>
                   <motion.h1
                     variants={rise}
-                    className="mt-6 max-w-xl font-display text-5xl font-normal leading-[1.05] tracking-tight sm:text-6xl lg:text-[4rem]"
+                    className="mt-5 max-w-xl text-balance font-display text-[2.125rem] font-normal leading-[1.08] tracking-tight sm:mt-6 sm:text-6xl sm:leading-[1.05] lg:text-[3.5rem]"
                   >
-                    Every file,
-                    <br />
-                    sorted by
-                    <br />
-                    quarter.
+                    Sort any USB drive by fiscal quarter.
                   </motion.h1>
-                  <motion.p variants={rise} className="mt-5 max-w-md font-mono text-xs leading-relaxed text-[#705957] sm:text-sm">
-                    Index USB drives and folders locally, fingerprint every document, and find duplicates — right in your browser.
+                  <motion.p
+                    variants={rise}
+                    className="mt-4 max-w-md text-pretty font-mono text-[13px] leading-relaxed text-[#705957] sm:mt-5 sm:text-sm"
+                  >
+                    Scan a USB drive or folder. QuarterSort files every document into Q1–Q4 and flags
+                    duplicates — all on your device.
                   </motion.p>
-                  <motion.div variants={rise} className="mt-6">
-                    <CtaButton onClick={onConnectUSB} variant="outline" shape="square">Scan a drive</CtaButton>
+                  <motion.div variants={rise} className="mt-7 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:items-center">
+                    <CtaButton onClick={onConnectUSB} variant="outline" shape="square" width="block-sm">
+                      Connect a drive
+                    </CtaButton>
+                    <a
+                      href="#get-started"
+                      className={`group inline-flex h-10 items-center justify-center gap-2 text-sm text-[#705957] underline-offset-4 transition-colors hover:text-[#542b2b] hover:underline ${focusRing}`}
+                    >
+                      See how it works
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
+                    </a>
                   </motion.div>
                 </div>
 
                 <motion.div
                   variants={rise}
-                  className="flex items-end justify-center overflow-hidden px-6 pt-4 lg:min-h-[440px] lg:px-8 lg:pt-10"
+                  className="flex items-end justify-center overflow-hidden px-4 pt-2 sm:px-6 sm:pt-4 lg:min-h-[440px] lg:px-8 lg:pt-10"
                 >
                   <HeroRobotIllustration />
                 </motion.div>
               </motion.div>
 
-              <ul aria-label="QuarterSort highlights" className="grid grid-cols-2 gap-px border-t border-[#d8ceca] bg-[#d8ceca] lg:grid-cols-5 [&>li:last-child]:col-span-2 lg:[&>li:last-child]:col-span-1">
+              <ul
+                aria-label="QuarterSort highlights"
+                className="grid grid-cols-2 gap-px border-t border-[#d8ceca] bg-[#d8ceca] lg:grid-cols-5 [&>li:last-child]:col-span-2 lg:[&>li:last-child]:col-span-1"
+              >
                 {[
+                  'Sorts files into Q1–Q4',
+                  'Finds exact duplicates',
+                  'AI audit report',
                   'Read-only access',
-                  'SHA-256 fingerprints',
-                  'Fiscal quarter sorting',
                   'Runs in your browser',
-                  'No uploads required',
                 ].map((highlight, i) => (
                   <li
                     key={highlight}
-                    className="flex min-h-14 items-center justify-center gap-2 bg-[#faf9f7] px-3 py-3 text-center text-xs text-[#705957] sm:px-4"
+                    className="flex min-h-14 items-center justify-center gap-1.5 bg-[#faf9f7] px-2 py-3 text-center text-[11px] leading-snug text-[#705957] sm:gap-2 sm:px-4 sm:text-xs"
                   >
                     <span aria-hidden className="font-mono text-[10px] text-[#9d8580]">{String(i + 1).padStart(2, '0')}</span>
                     <span>{highlight}</span>
@@ -802,19 +953,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
 
           {/* ================= GET STARTED ================= */}
           <section id="get-started" className="scroll-mt-20 overflow-hidden border-b border-[#d8ceca]">
-            <div className="mx-auto max-w-[1200px] px-6 py-16 sm:px-8 lg:py-20">
-              <div className="mx-auto grid max-w-xl grid-cols-1 gap-12 lg:max-w-none lg:grid-cols-[5fr_6fr] lg:gap-20">
+            <div className="mx-auto max-w-[1200px] px-5 py-14 sm:px-8 sm:py-16 lg:py-20">
+              <div className="mx-auto grid max-w-xl grid-cols-1 gap-10 sm:gap-12 lg:max-w-none lg:grid-cols-[5fr_6fr] lg:gap-20">
                 {/* Left: heading on top, illustration anchored to the bottom of the column */}
                 <motion.div variants={stagger} {...inView} className="flex flex-col lg:py-12">
                   <motion.div variants={rise}>
                     <SectionLabel index="01">How it works</SectionLabel>
                   </motion.div>
-                  <motion.h2 variants={rise} className="mt-6 max-w-md font-display text-4xl font-normal leading-[1.1] tracking-tight sm:text-5xl">
+                  <motion.h2
+                    variants={rise}
+                    className="mt-5 max-w-md font-display text-[2rem] font-normal leading-[1.12] tracking-tight sm:mt-6 sm:text-5xl"
+                  >
                     Get Started In
                     <br />
                     Minutes.
                   </motion.h2>
-                  <motion.div variants={rise} className="mt-12 flex justify-center lg:mt-auto lg:justify-start lg:pt-12">
+                  <motion.p variants={rise} className="mt-4 max-w-sm text-sm leading-relaxed text-[#705957]">
+                    Four steps, no uploads, no setup. Plug in a drive and you have a fiscal-year view of
+                    everything on it.
+                  </motion.p>
+                  <motion.div variants={rise} className="mt-10 flex justify-center sm:mt-12 lg:mt-auto lg:justify-start lg:pt-12">
                     <SortingIllustration />
                   </motion.div>
                 </motion.div>
@@ -825,48 +983,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
             </div>
           </section>
 
-          {/* ================= FEATURES ================= */}
-          <section id="features" className="scroll-mt-20 border-b border-[#d8ceca]">
-            <div className="mx-auto max-w-[1200px]">
-              <motion.div variants={stagger} {...inView} className="flex flex-col gap-5 px-5 pb-9 pt-12 sm:px-8 sm:pb-12 sm:pt-16 md:flex-row md:items-end md:justify-between md:gap-8 lg:pb-14 lg:pt-20">
-                <motion.div variants={rise} className="max-w-xl">
-                  <SectionLabel index="02">Features</SectionLabel>
-                  <h2 className="mt-4 max-w-lg font-display text-3xl font-normal leading-[1.1] tracking-tight sm:text-4xl lg:text-5xl">
-                    Everything you need to trust your records.
-                  </h2>
-                </motion.div>
-                <motion.p variants={rise} className="max-w-sm text-sm leading-relaxed text-[#705957] md:shrink-0 md:pb-1">
-                  Built for finance, compliance and audit teams who inherit drives full of undocumented files.
-                </motion.p>
-              </motion.div>
-
-              <motion.ul
-                variants={stagger}
-                {...inView}
-                className="grid gap-px border-t border-[#d8ceca] bg-[#d8ceca] sm:grid-cols-2 lg:grid-cols-3"
-              >
-                {FEATURES.map((f, i) => (
-                  <motion.li key={f.title} variants={rise} className="bg-[#faf9f7] px-5 py-6 transition-colors hover:bg-[#f3efeb] sm:px-6 sm:py-7 lg:px-7">
-                    <span className="font-mono text-xs text-[#9d8580]">{String(i + 1).padStart(2, '0')}</span>
-                    <h3 className="mt-3 font-display text-lg font-normal leading-snug sm:text-xl">{f.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-[#705957]">{f.desc}</p>
-                  </motion.li>
-                ))}
-              </motion.ul>
-            </div>
-          </section>
-
           {/* ================= PRIVACY ================= */}
           <section id="privacy" className="scroll-mt-20 border-b border-[#d8ceca]">
-            <motion.div variants={stagger} {...inView} className="mx-auto max-w-[1200px] px-6 py-16 sm:px-8 lg:py-24">
-              <div className="grid gap-12 lg:grid-cols-12 lg:items-end lg:gap-16">
+            <motion.div variants={stagger} {...inView} className="mx-auto max-w-[1200px] px-5 py-14 sm:px-8 sm:py-16 lg:py-24">
+              <div className="grid gap-10 sm:gap-12 lg:grid-cols-12 lg:items-end lg:gap-16">
                 <div className="lg:col-span-7 xl:col-span-8">
                   <motion.div variants={rise}>
-                    <SectionLabel index="03">Privacy</SectionLabel>
+                    <SectionLabel index="02">Privacy</SectionLabel>
                   </motion.div>
                   <motion.p
                     variants={rise}
-                    className="mt-8 text-balance font-display text-2xl font-normal leading-[1.3] tracking-tight sm:text-4xl sm:leading-[1.25] lg:text-[2.5rem]"
+                    className="mt-6 text-balance font-display text-[1.375rem] font-normal leading-[1.35] tracking-tight sm:mt-8 sm:text-4xl sm:leading-[1.25] lg:text-[2.5rem]"
                   >
                     Sensitive records deserve better than an upload form. QuarterSort does the heavy lifting{' '}
                     <span className="italic text-[#805d59]">on your machine</span> — and leaves your drive exactly as it found it.
@@ -876,7 +1003,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
                 {/* Where your data goes during a scan */}
                 <motion.figure
                   variants={rise}
-                  className="rounded-sm border border-[#d8ceca] p-6 sm:max-w-md lg:col-span-5 lg:max-w-none xl:col-span-4"
+                  className="rounded-sm border border-[#d8ceca] p-5 sm:max-w-md sm:p-6 lg:col-span-5 lg:max-w-none xl:col-span-4"
                   aria-label="During a scan, files move from your drive to your browser and into a local index. Nothing is uploaded."
                 >
                   <figcaption className="text-xs uppercase tracking-[0.2em] text-[#705957]">During a scan</figcaption>
@@ -887,9 +1014,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#805d59] bg-[#faf9f7]">
                           <Icon className="h-4 w-4" strokeWidth={1.5} />
                         </span>
-                        <span>
+                        <span className="min-w-0">
                           <span className="block font-display text-base">{title}</span>
-                          <span className="block font-mono text-xs text-[#705957]">{meta}</span>
+                          <span className="block font-mono text-[11px] text-[#705957] sm:text-xs">{meta}</span>
                         </span>
                       </li>
                     ))}
@@ -903,13 +1030,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
 
               <motion.dl
                 variants={stagger}
-                className="mt-14 grid gap-px border border-[#d8ceca] bg-[#d8ceca] sm:grid-cols-2 lg:mt-16 lg:grid-cols-4"
+                className="mt-12 grid gap-px border border-[#d8ceca] bg-[#d8ceca] sm:mt-14 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4"
               >
                 {PRIVACY.map((p, i) => (
-                  <motion.div key={p.title} variants={rise} className="bg-[#faf9f7] p-6 lg:p-7">
+                  <motion.div key={p.title} variants={rise} className="bg-[#faf9f7] p-5 sm:p-6 lg:p-7">
                     <span aria-hidden className="font-mono text-xs text-[#9d8580]">{String(i + 1).padStart(2, '0')}</span>
-                    <dt className="mt-4 font-display text-lg">{p.title}</dt>
-                    <dd className="mt-2 text-sm leading-relaxed text-[#705957]">{p.desc}</dd>
+                    <dt className="mt-3 font-display text-lg sm:mt-4">{p.title}</dt>
+                    <dd className="mt-2 text-[13px] leading-relaxed text-[#705957] sm:text-sm">{p.desc}</dd>
                   </motion.div>
                 ))}
               </motion.dl>
@@ -918,21 +1045,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
 
           {/* ================= FAQ ================= */}
           <section id="faq" className="scroll-mt-20 border-b border-[#d8ceca]">
-            <div className="mx-auto grid max-w-[1200px] gap-10 px-6 py-16 sm:px-8 lg:grid-cols-[1fr_2fr] lg:gap-16 lg:py-24">
+            <div className="mx-auto grid max-w-[1200px] gap-8 px-5 py-14 sm:px-8 sm:py-16 lg:grid-cols-[1fr_2fr] lg:gap-16 lg:py-24">
               <div>
-                <SectionLabel index="04">FAQ</SectionLabel>
-                <h2 className="mt-6 font-display text-4xl font-normal leading-[1.1] tracking-tight sm:text-5xl">
+                <SectionLabel index="03">FAQ</SectionLabel>
+                <h2 className="mt-5 font-display text-[2rem] font-normal leading-[1.12] tracking-tight sm:mt-6 sm:text-5xl">
                   Questions,
                   <br />
                   answered.
                 </h2>
-                <p className="mt-5 max-w-xs text-sm leading-relaxed text-[#705957]">
+                <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-[#705957] sm:mt-5 sm:text-sm">
                   Everything you need to know before plugging in your first drive.
                 </p>
                 <button
                   type="button"
                   onClick={onConnectUSB}
-                  className={`group mt-6 inline-flex items-center gap-2 border-b border-[#542b2b] pb-1 text-sm transition-opacity hover:opacity-70 ${focusRing}`}
+                  className={`group mt-5 inline-flex min-h-10 items-center gap-2 border-b border-[#542b2b] pb-1 text-sm transition-opacity hover:opacity-70 sm:mt-6 ${focusRing}`}
                 >
                   Try it on a drive
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
@@ -947,17 +1074,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
                     className="group border-b border-[#d8ceca] [&_summary::-webkit-details-marker]:hidden"
                   >
                     <summary
-                      className={`flex cursor-pointer list-none items-start gap-4 py-5 transition-colors hover:text-[#805d59] sm:gap-6 sm:py-6 ${focusRing}`}
+                      className={`flex cursor-pointer list-none items-start gap-3 py-4 transition-colors hover:text-[#805d59] sm:gap-6 sm:py-6 ${focusRing}`}
                     >
-                      <span aria-hidden className="w-6 shrink-0 pt-1 font-mono text-xs text-[#9d8580]">
+                      <span aria-hidden className="w-5 shrink-0 pt-1 font-mono text-[11px] text-[#9d8580] sm:w-6 sm:text-xs">
                         {String(i + 1).padStart(2, '0')}
                       </span>
-                      <span className="flex-1 font-display text-base leading-snug sm:text-lg">{f.q}</span>
+                      <span className="flex-1 text-[0.9375rem] font-display leading-snug sm:text-lg">{f.q}</span>
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d8ceca] transition-colors group-open:border-[#542b2b] group-open:bg-[#542b2b] group-open:text-[#faf9f7]">
                         <Plus className="h-3.5 w-3.5 transition-transform duration-300 group-open:rotate-45" aria-hidden />
                       </span>
                     </summary>
-                    <p className="-mt-1 max-w-xl pb-6 pl-10 pr-12 text-sm leading-relaxed text-[#705957] sm:pl-12 sm:pr-14">
+                    <p className="mb-5 max-w-xl pl-8 pr-2 text-[13px] leading-relaxed text-[#705957] sm:mb-6 sm:pl-12 sm:pr-14 sm:text-sm">
                       {f.a}
                     </p>
                   </details>
@@ -970,17 +1097,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
 
         {/* ================= FOOTER ================= */}
         <footer>
-          <div className="mx-auto grid max-w-[1200px] gap-10 px-6 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:py-14">
+          <div className="mx-auto grid max-w-[1200px] gap-10 px-5 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:py-14">
             <div className="sm:col-span-2 lg:col-span-6">
               <Logo size="md" />
-              <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#705957]">
+              <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-[#705957] sm:text-sm">
                 Scan, classify and audit USB drives by fiscal quarter — locally, in your browser.
               </p>
             </div>
 
             <nav aria-label="Footer" className="lg:col-span-3">
               <p className="text-xs uppercase tracking-[0.2em] text-[#705957]">Explore</p>
-              <ul className="mt-4 space-y-2.5 text-sm">
+              <ul className="mt-3 space-y-0.5 text-sm sm:mt-4 sm:space-y-2.5">
                 {[...NAV_LEFT, { href: '#faq', label: 'FAQ' }].map((l) => (
                   <li key={l.href}>
                     <NavLink href={l.href}>{l.label}</NavLink>
@@ -991,12 +1118,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
 
             <div className="lg:col-span-3">
               <p className="text-xs uppercase tracking-[0.2em] text-[#705957]">Get started</p>
-              <ul className="mt-4 space-y-2.5 text-sm">
+              <ul className="mt-3 space-y-0.5 text-sm sm:mt-4 sm:space-y-2.5">
                 <li>
                   <button
                     type="button"
                     onClick={onConnectUSB}
-                    className={`group inline-flex items-center gap-1.5 transition-opacity hover:opacity-60 ${focusRing}`}
+                    className={`group inline-flex min-h-9 items-center gap-1.5 transition-opacity hover:opacity-60 ${focusRing}`}
                   >
                     Scan a drive
                     <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
@@ -1012,13 +1139,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
           {/* Bottom bar mirrors the header's three bordered cells */}
           <div className="border-t border-[#d8ceca]">
             <div className="mx-auto grid max-w-[1200px] grid-cols-2 text-xs text-[#705957] sm:grid-cols-[1fr_auto_1fr]">
-              <p className="px-6 py-5 sm:px-8">© {year} QuarterSort AI</p>
-              <p className="order-first col-span-2 flex items-center justify-center gap-2 border-b border-[#d8ceca] px-6 py-5 sm:order-none sm:col-span-1 sm:border-x sm:border-b-0">
-                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[#805d59]" />
+              <p className="px-5 py-4 sm:px-8 sm:py-5">© {year} QuarterSort AI</p>
+              <p className="order-first col-span-2 flex items-center justify-center gap-2 border-b border-[#d8ceca] px-5 py-4 text-center sm:order-none sm:col-span-1 sm:border-x sm:border-b-0 sm:px-8 sm:py-5">
+                <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#805d59]" />
                 Files stay on your device during scans
               </p>
-              <div className="flex justify-end px-6 py-5 sm:px-8">
-                <a href="#top" className={`group inline-flex items-center gap-1.5 transition-opacity hover:opacity-60 ${focusRing}`}>
+              <div className="flex justify-end px-5 py-4 sm:px-8 sm:py-5">
+                <a href="#top" className={`group inline-flex min-h-9 items-center gap-1.5 transition-opacity hover:opacity-60 ${focusRing}`}>
                   Back to top
                   <ArrowUp className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" aria-hidden />
                 </a>
@@ -1028,5 +1155,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onConnectUSB }) => {
         </footer>
       </div>
     </MotionConfig>
+  );
+};
+
+export const LandingPage: React.FC<LandingPageProps> = (props) => {
+  const ready = useIntro();
+  // Remember whether the loader was shown so deep links (e.g. /#faq) can be
+  // honoured once the content exists — the browser can't scroll to it earlier.
+  const waited = React.useRef(!ready);
+
+  React.useEffect(() => {
+    if (!ready || !waited.current || !window.location.hash) return;
+    try {
+      document.querySelector(window.location.hash)?.scrollIntoView();
+    } catch {
+      // hash wasn't a valid selector — ignore
+    }
+  }, [ready]);
+
+  return (
+    <>
+      <AnimatePresence>{!ready && <PageLoader key="loader" />}</AnimatePresence>
+      {ready && <LandingContent {...props} />}
+    </>
   );
 };
